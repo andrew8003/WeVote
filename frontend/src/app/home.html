@@ -231,25 +231,30 @@
                 <h4>Scan QR Code</h4>
                 <p>Scan this code with your authenticator app</p>
                 
-                <div class="qr-code-container" *ngIf="qrCodeDataURL">
-                  <img [src]="qrCodeDataURL" alt="QR Code for Authenticator Setup" class="qr-code">
+                <!-- Left side: QR Code and Manual Entry -->
+                <div class="qr-left-content">
+                  <div class="qr-code-container" *ngIf="qrCodeDataURL">
+                    <img [src]="qrCodeDataURL" alt="QR Code for Authenticator Setup" class="qr-code">
+                  </div>
+                  
+                  <div class="auth-code-section">
+                    <p class="auth-code-label">Manual Entry Code:</p>
+                    <div class="auth-code-display">{{ authCode }}</div>
+                  </div>
                 </div>
                 
-                <div class="auth-code-section">
-                  <p class="auth-code-label">Manual Entry Code:</p>
-                  <div class="auth-code-display">{{ authCode }}</div>
-                  <p class="auth-code-note">Enter this code in your authenticator app if you can't scan the QR code</p>
+                <!-- Right side: Buttons -->
+                <div class="qr-right-content">
+                  <button type="button" class="auth-button proceed-button" (click)="proceedToVerification()">
+                    <span class="button-icon">✓</span>
+                    I've Added This to My App
+                  </button>
+                  
+                  <button type="button" class="auth-button reset-button" (click)="resetAuthenticatorCard()">
+                    <span class="button-icon">🔄</span>
+                    Back to Setup
+                  </button>
                 </div>
-                
-                <button type="button" class="auth-button proceed-button" (click)="proceedToVerification()">
-                  <span class="button-icon">✓</span>
-                  I've Added This to My App
-                </button>
-                
-                <button type="button" class="auth-button reset-button" (click)="resetAuthenticatorCard()">
-                  <span class="button-icon">🔄</span>
-                  Back to Setup
-                </button>
               </div>
               
               <!-- Verification Section -->
