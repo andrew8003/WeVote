@@ -1,0 +1,155 @@
+<div class="container">
+  <!-- Header Section -->
+  <header class="header">
+    <div class="logo">
+      <h1>WeVote</h1>
+      <span class="tagline">Secure Digital Democracy</span>
+    </div>
+  </header>
+
+  <!-- Introduction Section -->
+  <section class="intro-section">
+    <div class="intro-content">
+      <h2>Welcome to the Future of Voting</h2>
+      <p>
+        Experience secure, transparent, and accessible electronic voting. Our advanced E-Voting system 
+        ensures your vote is counted accurately while maintaining the highest standards of security and privacy. 
+        Vote from anywhere, at any time, with complete confidence in the integrity of the democratic process.
+      </p>
+      <div class="features">
+        <div class="feature">
+          <span class="icon">🔒</span>
+          <span>Secure & Encrypted</span>
+        </div>
+        <div class="feature">
+          <span class="icon">✓</span>
+          <span>Verifiable Results</span>
+        </div>
+        <div class="feature">
+          <span class="icon">📱</span>
+          <span>Multi-Device Access</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Personal Details Section -->
+  <section class="personal-details-section">
+    <div class="section-header">
+      <h3>Personal Information</h3>
+      <p>Please provide your details to verify your identity</p>
+    </div>
+    
+    <form class="personal-form" [formGroup]="personalForm" (ngSubmit)="onSubmitPersonalDetails()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="firstName"
+            placeholder="Enter your first name"
+            [class.error]="personalForm.get('firstName')?.invalid && personalForm.get('firstName')?.touched"
+          >
+          <div class="error-message" *ngIf="personalForm.get('firstName')?.invalid && personalForm.get('firstName')?.touched">
+            First name is required
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="lastName"
+            placeholder="Enter your last name"
+            [class.error]="personalForm.get('lastName')?.invalid && personalForm.get('lastName')?.touched"
+          >
+          <div class="error-message" *ngIf="personalForm.get('lastName')?.invalid && personalForm.get('lastName')?.touched">
+            Last name is required
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <textarea 
+          id="address" 
+          formControlName="address"
+          placeholder="Enter your full address"
+          rows="3"
+          [class.error]="personalForm.get('address')?.invalid && personalForm.get('address')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="personalForm.get('address')?.invalid && personalForm.get('address')?.touched">
+          Address is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="nationalInsurance">National Insurance Number</label>
+        <input 
+          type="text" 
+          id="nationalInsurance" 
+          formControlName="nationalInsurance"
+          placeholder="XX 12 34 56 X"
+          [class.error]="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched"
+        >
+        <div class="error-message" *ngIf="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched">
+          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['required']">National Insurance Number is required</span>
+          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['pattern']">Please enter a valid National Insurance Number format</span>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- Authentication Methods Section -->
+  <section class="auth-section">
+    <div class="section-header">
+      <h3>Authentication Methods</h3>
+      <p>Choose your preferred authentication method for secure access</p>
+    </div>
+
+    <div class="auth-methods">
+      <div class="auth-method">
+        <div class="auth-icon">
+          <span>📧</span>
+        </div>
+        <div class="auth-content">
+          <h4>Email Authentication</h4>
+          <p>Receive a secure verification code via email</p>
+          <button type="button" class="auth-button email-auth" (click)="setupEmailAuth()">
+            <span class="button-icon">📧</span>
+            Setup Email Authentication
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-method">
+        <div class="auth-icon">
+          <span>📱</span>
+        </div>
+        <div class="auth-content">
+          <h4>Authenticator App</h4>
+          <p>Use your smartphone for two-factor authentication</p>
+          <button type="button" class="auth-button app-auth" (click)="setupAuthenticatorApp()">
+            <span class="button-icon">📱</span>
+            Setup Authenticator App
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Action Section -->
+  <section class="action-section">
+    <button 
+      type="button" 
+      class="primary-button" 
+      [disabled]="!personalForm.valid"
+      (click)="proceedToVoting()"
+    >
+      <span class="button-icon">🗳️</span>
+      Proceed to Voting
+    </button>
+  </section>
+</div>
