@@ -201,12 +201,282 @@
   text-align: center;
   border: 2px solid #e9ecef;
   transition: all 0.3s ease;
+  height: 450px;
+  position: relative;
 }
 
 .auth-method:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
   border-color: #667eea;
+}
+
+/* Flip card styles */
+.authenticator-card,
+.email-card {
+  perspective: 1000px;
+  padding: 0;
+  background: transparent;
+}
+
+.auth-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.authenticator-card.flipped .auth-card-inner,
+.email-card.flipped .auth-card-inner {
+  transform: rotateY(180deg);
+}
+
+.auth-card-front,
+.auth-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.auth-card-back {
+  transform: rotateY(180deg);
+  background: #fff;
+}
+
+/* QR Code Styles */
+.qr-content h4,
+.email-content h4 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.qr-content p,
+.email-content p {
+  color: #5a6c7d;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.qr-code-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.qr-code {
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+}
+
+.auth-code-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.auth-code-label {
+  font-size: 0.9rem;
+  color: #5a6c7d;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.auth-code-display {
+  background: #667eea;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.auth-code-note {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  line-height: 1.4;
+}
+
+.reset-button {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  margin-top: 15px;
+}
+
+.reset-button:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(127, 140, 141, 0.4);
+}
+
+.proceed-button {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  margin-bottom: 10px;
+}
+
+.proceed-button:hover {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+}
+
+/* Verification Section Styles */
+.verification-section {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.verification-input {
+  width: 200px;
+  padding: 15px 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  letter-spacing: 3px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.verification-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.verification-input::placeholder {
+  color: #bdc3c7;
+  font-weight: normal;
+}
+
+.verify-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 200px;
+}
+
+.verify-button:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.back-button {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  margin-top: 10px;
+}
+
+.back-button:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(127, 140, 141, 0.4);
+}
+
+.verification-note {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  text-align: center;
+  margin: 10px 0;
+  line-height: 1.4;
+}
+
+/* Success Section Styles */
+.success-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  font-size: 1rem;
+  color: #27ae60;
+  font-weight: 500;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.done-button {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  cursor: default;
+  opacity: 1;
+}
+
+.done-button:disabled {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  cursor: default;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+  opacity: 1;
+}
+
+.done-button:hover:disabled {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+/* Email Verification Styles */
+.email-input-section {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.email-input {
+  width: 250px;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.email-input::placeholder {
+  color: #bdc3c7;
+}
+
+.send-button {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  width: 250px;
+}
+
+.send-button:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
 }
 
 .auth-icon {
@@ -337,6 +607,20 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
+  
+  .auth-method {
+    height: 400px;
+  }
+  
+  .auth-card-front,
+  .auth-card-back {
+    padding: 20px;
+  }
+  
+  .qr-code {
+    width: 120px;
+    height: 120px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -364,5 +648,46 @@
   .personal-details-section,
   .auth-section {
     padding: 20px;
+  }
+  
+  .auth-method {
+    height: 300px;
+  }
+  
+  .auth-card-front,
+  .auth-card-back {
+    padding: 15px;
+  }
+  
+  .qr-code {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .auth-code-display {
+    font-size: 1rem;
+    padding: 10px 15px;
+  }
+  
+  .verification-input {
+    width: 160px;
+    font-size: 1.3rem;
+    padding: 12px 15px;
+  }
+  
+  .verify-button {
+    width: 160px;
+  }
+  
+  .email-input {
+    width: 200px;
+  }
+  
+  .send-button {
+    width: 200px;
+  }
+  
+  .success-icon {
+    font-size: 3rem;
   }
 }
