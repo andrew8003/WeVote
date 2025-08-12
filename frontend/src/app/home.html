@@ -3,42 +3,16 @@
   <header class="header">
     <div class="logo">
       <h1>WeVote</h1>
-      <span class="tagline">Secure Digital Voting</span>
     </div>
+    <p class="tagline">Secure Digital Voting Platform</p>
+    <p class="subtitle">Enter your personal details to begin the voting process</p>
   </header>
-
-  <!-- Introduction Section -->
-  <section class="intro-section">
-    <div class="intro-content">
-      <h2>Welcome to the Future of Voting</h2>
-      <p>
-        WeVote has been selected as the official voting platform for the upcoming elections.
-        Experience secure, transparent, and accessible electronic voting. Our advanced E-Voting system
-        ensures your vote is counted accurately while maintaining the highest standards of security and privacy.
-        Vote from anywhere, at any time, with complete confidence in the integrity of the democratic process.
-      </p>
-      <div class="features">
-        <div class="feature">
-          <span class="icon">🔒</span>
-          <span>Secure & Encrypted</span>
-        </div>
-        <div class="feature">
-          <span class="icon">✓</span>
-          <span>Anonymitiy & Privacy</span>
-        </div>
-        <div class="feature">
-          <span class="icon">📱</span>
-          <span>Multi-Device Access</span>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Personal Details Section -->
   <section class="personal-details-section">
     <div class="section-header">
-      <h3>Personal Information</h3>
-      <p>Please provide your details to verify your identity</p>
+      <h2>Personal Information</h2>
+      <p>Please provide your personal details to verify your identity</p>
     </div>
     
     <form class="personal-form" [formGroup]="personalForm" (ngSubmit)="onSubmitPersonalDetails()">
@@ -78,12 +52,12 @@
           type="text" 
           id="postcode" 
           formControlName="postcode"
-          placeholder="e.g. SW1A 1AA"
+          placeholder="Enter your postcode"
           [class.error]="personalForm.get('postcode')?.invalid && personalForm.get('postcode')?.touched"
         >
         <div class="error-message" *ngIf="personalForm.get('postcode')?.invalid && personalForm.get('postcode')?.touched">
           <span *ngIf="personalForm.get('postcode')?.errors?.['required']">Postcode is required</span>
-          <span *ngIf="personalForm.get('postcode')?.errors?.['pattern']">Please enter a valid UK postcode format</span>
+          <span *ngIf="personalForm.get('postcode')?.errors?.['pattern']">Please enter a valid UK postcode</span>
         </div>
       </div>
 
@@ -93,231 +67,24 @@
           type="text" 
           id="nationalInsurance" 
           formControlName="nationalInsurance"
-          placeholder="XX 12 34 56 X"
+          placeholder="e.g. PH827413D or PH 82 74 13 D"
           [class.error]="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched"
         >
         <div class="error-message" *ngIf="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched">
           <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['required']">National Insurance Number is required</span>
-          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['pattern']">Please enter a valid National Insurance Number format</span>
+          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['invalidNationalInsurance']">
+            Please enter a valid format: 2 letters + 6 numbers + 1 letter (e.g. PH827413D)
+          </span>
         </div>
       </div>
+
+      <button 
+        type="submit" 
+        class="primary-button" 
+        [disabled]="personalForm.invalid"
+      >
+        Next: Setup Authentication →
+      </button>
     </form>
-  </section>
-
-  <!-- Authentication Methods Section -->
-  <section class="auth-section">
-    <div class="section-header">
-      <h3>Authentication Methods</h3>
-      <p>You are required to setup Email and an Authenticator App, this is for security and will be used to verify your identitiy when you vote</p>
-    </div>
-
-    <div class="auth-methods">
-      <div class="auth-method email-card" [class.flipped]="showEmailSetup">
-        <div class="auth-card-inner">
-          <!-- Front of email card -->
-          <div class="auth-card-front">
-            <div class="auth-icon">
-              <span>📧</span>
-            </div>
-            <div class="auth-content">
-              <h4>Email Authentication</h4>
-              <p>Receive a secure verification code via email</p>
-              <button type="button" class="auth-button email-auth" (click)="setupEmailAuth()">
-                <span class="button-icon">📧</span>
-                Setup Email Authentication
-              </button>
-            </div>
-          </div>
-          
-          <!-- Back of email card -->
-          <div class="auth-card-back">
-            <div class="email-content">
-              <!-- Email Input Section -->
-              <div *ngIf="!emailSent && !emailVerificationSuccess">
-                <h4>Enter Your Email</h4>
-                <p>We'll send a verification code to this email address</p>
-                
-                <div class="email-input-section">
-                  <input 
-                    type="email" 
-                    [(ngModel)]="userEmail"
-                    placeholder="your.email@example.com"
-                    class="email-input"
-                  >
-                  
-                  <button type="button" class="auth-button send-button" (click)="sendEmailVerification()">
-                    <span class="button-icon">📤</span>
-                    Send Verification Code
-                  </button>
-                </div>
-                
-                <button type="button" class="auth-button reset-button" (click)="resetEmailSetup()">
-                  <span class="button-icon">🔄</span>
-                  Back to Setup
-                </button>
-              </div>
-              
-              <!-- Email Verification Section -->
-              <div *ngIf="emailSent && !emailVerificationSuccess">
-                <h4>Check Your Email</h4>
-                <p>Enter the 6-digit code sent to {{ userEmail }}</p>
-                
-                <div class="verification-section">
-                  <input 
-                    type="text" 
-                    [(ngModel)]="emailVerificationCode"
-                    placeholder="000000"
-                    maxlength="6"
-                    class="verification-input"
-                    [pattern]="'^[0-9]{6}$'"
-                  >
-                  
-                  <button type="button" class="auth-button verify-button" (click)="verifyEmailCode()">
-                    <span class="button-icon">🔐</span>
-                    Verify Code
-                  </button>
-                </div>
-                
-                <p class="verification-note">Didn't receive the code? Check your spam folder or try again.</p>
-                
-                <button type="button" class="auth-button back-button" (click)="emailSent = false">
-                  <span class="button-icon">⬅️</span>
-                  Change Email
-                </button>
-              </div>
-              
-              <!-- Email Success Section -->
-              <div *ngIf="emailVerificationSuccess">
-                <h4>✅ Email Verified!</h4>
-                <p>Your email address has been successfully verified</p>
-                
-                <div class="success-section">
-                  <div class="success-icon">🎉</div>
-                  <p class="success-message">You can now receive verification codes at {{ userEmail }}</p>
-                </div>
-                
-                <button type="button" class="auth-button done-button" disabled>
-                  <span class="button-icon">✅</span>
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="auth-method authenticator-card" [class.flipped]="showQRCode">
-        <div class="auth-card-inner">
-          <!-- Front of card -->
-          <div class="auth-card-front">
-            <div class="auth-icon">
-              <span>📱</span>
-            </div>
-            <div class="auth-content">
-              <h4>Authenticator App</h4>
-              <p>Use your smartphone for two-factor authentication</p>
-              <button type="button" class="auth-button app-auth" (click)="setupAuthenticatorApp()">
-                <span class="button-icon">📱</span>
-                Setup Authenticator App
-              </button>
-            </div>
-          </div>
-          
-          <!-- Back of card with QR code -->
-          <div class="auth-card-back">
-            <div class="qr-content">
-              <!-- QR Code Section -->
-              <div *ngIf="!showVerification && !verificationSuccess">
-                <h4>Scan QR Code</h4>
-                <p>Scan this code with your authenticator app</p>
-                
-                <!-- Left side: QR Code and Manual Entry -->
-                <div class="qr-left-content">
-                  <div class="qr-code-container" *ngIf="qrCodeDataURL">
-                    <img [src]="qrCodeDataURL" alt="QR Code for Authenticator Setup" class="qr-code">
-                  </div>
-                  
-                  <div class="auth-code-section">
-                    <p class="auth-code-label">Manual Entry Code:</p>
-                    <div class="auth-code-display">{{ authCode }}</div>
-                  </div>
-                </div>
-                
-                <!-- Right side: Buttons -->
-                <div class="qr-right-content">
-                  <button type="button" class="auth-button proceed-button" (click)="proceedToVerification()">
-                    <span class="button-icon">✓</span>
-                    I've Added This to My App
-                  </button>
-                  
-                  <button type="button" class="auth-button reset-button" (click)="resetAuthenticatorCard()">
-                    <span class="button-icon">🔄</span>
-                    Back to Setup
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Verification Section -->
-              <div *ngIf="showVerification && !verificationSuccess">
-                <h4>Verify Setup</h4>
-                <p>Enter the 6-digit code from your authenticator app</p>
-                
-                <div class="verification-section">
-                  <input 
-                    type="text" 
-                    [(ngModel)]="verificationCode"
-                    placeholder="000000"
-                    maxlength="6"
-                    class="verification-input"
-                    [pattern]="'^[0-9]{6}$'"
-                  >
-                  
-                  <button type="button" class="auth-button verify-button" (click)="verifyAuthenticatorCode()">
-                    <span class="button-icon">🔐</span>
-                    Verify Code
-                  </button>
-                </div>
-                
-                <p class="verification-note">The code changes every 30 seconds. Enter the current code showing in your app.</p>
-                
-                <button type="button" class="auth-button back-button" (click)="showVerification = false">
-                  <span class="button-icon">⬅️</span>
-                  Back to QR Code
-                </button>
-              </div>
-              
-              <!-- Success Section -->
-              <div *ngIf="verificationSuccess">
-                <h4>✅ Setup Complete!</h4>
-                <p>Your authenticator app is now configured and verified</p>
-                
-                <div class="success-section">
-                  <div class="success-icon">🎉</div>
-                  <p class="success-message">You can now use your authenticator app to access WeVote securely</p>
-                </div>
-                
-                <button type="button" class="auth-button done-button" disabled>
-                  <span class="button-icon">✅</span>
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Action Section -->
-  <section class="action-section">
-    <button 
-      type="button" 
-      class="primary-button" 
-      [disabled]="!personalForm.valid"
-      (click)="proceedToVoting()"
-    >
-      <span class="button-icon">🗳️</span>
-      Submit
-    </button>
   </section>
 </div>

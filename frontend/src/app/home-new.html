@@ -1,0 +1,86 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <header class="hero">
+    <h1>WeVote</h1>
+    <p class="tagline">Secure Digital Voting Platform</p>
+    <p class="subtitle">Enter your personal details to begin the voting process</p>
+  </header>
+
+  <!-- Personal Details Section -->
+  <section class="personal-details">
+    <h2>Personal Information</h2>
+    <p>Please provide your personal details to verify your identity</p>
+    
+    <form [formGroup]="personalForm" (ngSubmit)="onSubmitPersonalDetails()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="firstName"
+            placeholder="Enter your first name"
+            [class.error]="personalForm.get('firstName')?.invalid && personalForm.get('firstName')?.touched"
+          >
+          <div class="error-message" *ngIf="personalForm.get('firstName')?.invalid && personalForm.get('firstName')?.touched">
+            First name is required
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="lastName"
+            placeholder="Enter your last name"
+            [class.error]="personalForm.get('lastName')?.invalid && personalForm.get('lastName')?.touched"
+          >
+          <div class="error-message" *ngIf="personalForm.get('lastName')?.invalid && personalForm.get('lastName')?.touched">
+            Last name is required
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="postcode">Postcode</label>
+        <input 
+          type="text" 
+          id="postcode" 
+          formControlName="postcode"
+          placeholder="Enter your postcode"
+          [class.error]="personalForm.get('postcode')?.invalid && personalForm.get('postcode')?.touched"
+        >
+        <div class="error-message" *ngIf="personalForm.get('postcode')?.invalid && personalForm.get('postcode')?.touched">
+          <span *ngIf="personalForm.get('postcode')?.errors?.['required']">Postcode is required</span>
+          <span *ngIf="personalForm.get('postcode')?.errors?.['pattern']">Please enter a valid UK postcode</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="nationalInsurance">National Insurance Number</label>
+        <input 
+          type="text" 
+          id="nationalInsurance" 
+          formControlName="nationalInsurance"
+          placeholder="e.g. PH827413D or PH 82 74 13 D"
+          [class.error]="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched"
+        >
+        <div class="error-message" *ngIf="personalForm.get('nationalInsurance')?.invalid && personalForm.get('nationalInsurance')?.touched">
+          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['required']">National Insurance Number is required</span>
+          <span *ngIf="personalForm.get('nationalInsurance')?.errors?.['invalidNationalInsurance']">
+            Please enter a valid format: 2 letters + 6 numbers + 1 letter (e.g. PH827413D)
+          </span>
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        class="submit-button" 
+        [disabled]="personalForm.invalid"
+      >
+        Next: Setup Authentication →
+      </button>
+    </form>
+  </section>
+</div>

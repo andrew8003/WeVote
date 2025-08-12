@@ -1,0 +1,168 @@
+<div class="auth-container">
+  <div class="header">
+    <h1>WeVote Authentication Setup</h1>
+    <p>Complete your security verification to proceed with voting</p>
+    <button class="back-button" (click)="goBack()">← Back to Personal Details</button>
+  </div>
+
+  <div class="auth-content">
+    <!-- Email Verification Card -->
+    <div class="auth-card" [class.completed]="emailVerificationSuccess">
+      <div class="card-header">
+        <h3>📧 Email Verification</h3>
+        <span class="status" *ngIf="emailVerificationSuccess">✅ Verified</span>
+      </div>
+      
+      <div class="card-content" *ngIf="!emailVerificationSuccess">
+        <p>Enter your email address to receive a verification code</p>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email"
+            [(ngModel)]="userEmail" 
+            placeholder="Enter your email address"
+            [disabled]="emailSent"
+          >
+        </div>
+        
+        <button 
+          class="primary-button" 
+          (click)="sendEmailVerification()"
+          [disabled]="emailSent"
+        >
+          {{ emailSent ? 'Email Sent!' : 'Send Verification Email' }}
+        </button>
+        
+        <div class="verification-section" *ngIf="emailSent">
+          <div class="form-group">
+            <label for="emailCode">Verification Code</label>
+            <input 
+              type="text" 
+              id="emailCode"
+              [(ngModel)]="emailVerificationCode" 
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+            >
+          </div>
+          
+          <button 
+            class="primary-button" 
+            (click)="verifyEmailCode()"
+          >
+            Verify Email
+          </button>
+          
+          <button 
+            class="secondary-button" 
+            (click)="resetEmailSetup()"
+          >
+            Use Different Email
+          </button>
+        </div>
+      </div>
+      
+      <div class="card-content success" *ngIf="emailVerificationSuccess">
+        <p>✅ Email verification completed successfully!</p>
+      </div>
+    </div>
+
+    <!-- Authenticator App Card -->
+    <div class="auth-card" [class.completed]="verificationSuccess">
+      <div class="card-header">
+        <h3>📱 Authenticator App</h3>
+        <span class="status" *ngIf="verificationSuccess">✅ Verified</span>
+      </div>
+      
+      <div class="card-content" *ngIf="!verificationSuccess">
+        <p>Set up an authenticator app for additional security</p>
+        
+        <button 
+          class="primary-button" 
+          (click)="setupAuthenticatorApp()"
+          *ngIf="!showQRCode"
+        >
+          Setup Authenticator App
+        </button>
+        
+        <div class="qr-section" *ngIf="showQRCode && !showVerification">
+          <h4>Scan QR Code</h4>
+          <p>Use Google Authenticator, Authy, or similar app to scan this QR code:</p>
+          
+          <div class="qr-container">
+            <div class="qr-code">
+              <img [src]="qrCodeDataURL" alt="QR Code for Authenticator Setup" *ngIf="qrCodeDataURL">
+            </div>
+            
+            <div class="manual-entry">
+              <h5>Manual Entry:</h5>
+              <p><strong>Account:</strong> voter@wevote.com</p>
+              <p><strong>Issuer:</strong> WeVote</p>
+              <p><strong>Secret Key:</strong></p>
+              <code>{{ secretKey }}</code>
+            </div>
+          </div>
+          
+          <button 
+            class="primary-button" 
+            (click)="proceedToVerification()"
+          >
+            I've Added the Account
+          </button>
+          
+          <button 
+            class="secondary-button" 
+            (click)="resetAuthenticatorCard()"
+          >
+            Reset Setup
+          </button>
+        </div>
+        
+        <div class="verification-section" *ngIf="showVerification">
+          <h4>Verify Authenticator Code</h4>
+          <p>Enter the 6-digit code from your authenticator app:</p>
+          
+          <div class="form-group">
+            <label for="authCode">Authentication Code</label>
+            <input 
+              type="text" 
+              id="authCode"
+              [(ngModel)]="verificationCode" 
+              placeholder="000000"
+              maxlength="6"
+            >
+          </div>
+          
+          <button 
+            class="primary-button" 
+            (click)="verifyAuthenticatorCode()"
+          >
+            Verify Code
+          </button>
+          
+          <button 
+            class="secondary-button" 
+            (click)="resetAuthenticatorCard()"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+      
+      <div class="card-content success" *ngIf="verificationSuccess">
+        <p>✅ Authenticator app verification completed successfully!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proceed Button -->
+  <div class="proceed-section" *ngIf="emailVerificationSuccess && verificationSuccess">
+    <button 
+      class="proceed-button" 
+      (click)="proceedToVoting()"
+    >
+      🗳️ Proceed to Voting
+    </button>
+  </div>
+</div>
