@@ -1,9 +1,13 @@
 <div class="auth-container">
-  <div class="header">
-    <h1>WeVote Authentication Setup</h1>
-    <p>Complete your security verification to proceed with voting</p>
+  <!-- Header Section -->
+  <header class="header">
+    <div class="logo">
+      <h1>WeVote</h1>
+    </div>
+    <p class="tagline">Secure Digital Voting Platform</p>
+    <p class="subtitle">Complete your security verification to proceed with voting</p>
     <button class="back-button" (click)="goBack()">← Back to Personal Details</button>
-  </div>
+  </header>
 
   <div class="auth-content">
     <!-- Email Verification Card -->
@@ -76,7 +80,7 @@
       </div>
       
       <div class="card-content" *ngIf="!verificationSuccess">
-        <p>Set up an authenticator app for additional security</p>
+        <p class="authenticator-intro">Set up an authenticator app for additional security</p>
         
         <button 
           class="primary-button" 
@@ -160,9 +164,9 @@
   <div class="proceed-section" *ngIf="emailVerificationSuccess && verificationSuccess">
     <button 
       class="proceed-button" 
-      (click)="proceedToVoting()"
+      (click)="finishRegistration()"
     >
-      🗳️ Proceed to Voting
+      ✅ Finish
     </button>
   </div>
 </div>

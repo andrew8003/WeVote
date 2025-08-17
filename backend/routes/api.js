@@ -174,46 +174,57 @@ router.post('/users/:sessionId/send-email-verification', async (req, res) => {
   }
 });
 
-// Verify email code
-router.post('/users/:userId/verify-email', async (req, res) => {
+// Verify email code (works with session storage)
+router.post('/users/:sessionId/verify-email', async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { sessionId } = req.params;
     const { code } = req.body;
 
+    console.log('Verifying email code for session:', sessionId, 'with code:', code);
+
     if (!code) {
+      console.log('No code provided');
       return res.status(400).json({ error: 'Verification code is required' });
     }
 
-    const db = await dbConnection.connect();
-    const usersCollection = dbConnection.getUsersCollection();
-    const emailCodesCollection = dbConnection.getEmailCodesCollection();
-
-    // Find verification code
-    const storedCode = await emailCodesCollection.findOne({
-      userId: new ObjectId(userId),
-      code: code,
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (!storedCode) {
-      return res.status(400).json({ 
-        error: 'Invalid or expired verification code' 
-      });
+    // Get user data from session
+    const userData = userSessions.get(sessionId);
+    if (!userData) {
+      console.log('Session not found:', sessionId);
+      console.log('Available sessions:', Array.from(userSessions.keys()));
+      return res.status(404).json({ error: 'Session not found. Please restart the registration process.' });
     }
 
-    // Mark email as verified
-    await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      { 
-        $set: { 
-          emailVerified: true,
-          updatedAt: new Date()
-        }
-      }
-    );
+    console.log('Session data found:', {
+      email: userData.email,
+      emailVerificationCode: userData.emailVerificationCode,
+      emailCodeExpires: userData.emailCodeExpires,
+      emailVerified: userData.emailVerified
+    });
 
-    // Remove used verification code
-    await emailCodesCollection.deleteOne({ _id: storedCode._id });
+    // Check if code matches and hasn't expired
+    if (!userData.emailVerificationCode) {
+      console.log('No verification code in session');
+      return res.status(400).json({ error: 'No verification code found. Please request a new code.' });
+    }
+
+    if (userData.emailVerificationCode !== code) {
+      console.log('Code mismatch. Expected:', userData.emailVerificationCode, 'Got:', code);
+      return res.status(400).json({ error: 'Invalid verification code. Please try again.' });
+    }
+
+    if (userData.emailCodeExpires && new Date() > userData.emailCodeExpires) {
+      console.log('Code expired. Expiry:', userData.emailCodeExpires, 'Now:', new Date());
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
+    }
+
+    // Mark email as verified in session
+    userData.emailVerified = true;
+    userData.emailVerificationCode = null; // Clear the used code
+    userData.emailCodeExpires = null;
+    userSessions.set(sessionId, userData);
+
+    console.log('Email verified successfully for session:', sessionId);
 
     res.json({ 
       success: true, 
@@ -226,30 +237,31 @@ router.post('/users/:userId/verify-email', async (req, res) => {
   }
 });
 
-// Setup TOTP (store secret)
-router.post('/users/:userId/setup-totp', async (req, res) => {
+// Setup TOTP (store secret in session)
+router.post('/users/:sessionId/setup-totp', async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { sessionId } = req.params;
     const { secret } = req.body;
+
+    console.log('Setting up TOTP for session:', sessionId, 'with secret:', secret ? 'PROVIDED' : 'MISSING');
 
     if (!secret) {
       return res.status(400).json({ error: 'TOTP secret is required' });
     }
 
-    const db = await dbConnection.connect();
-    const usersCollection = dbConnection.getUsersCollection();
+    // Get user data from session
+    const userData = userSessions.get(sessionId);
+    if (!userData) {
+      console.log('Session not found for TOTP setup:', sessionId);
+      return res.status(404).json({ error: 'Session not found. Please restart the registration process.' });
+    }
 
-    // Store TOTP secret
-    await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      { 
-        $set: { 
-          totpSecret: secret,
-          totpVerified: false,
-          updatedAt: new Date()
-        }
-      }
-    );
+    // Store TOTP secret in session
+    userData.totpSecret = secret;
+    userData.totpVerified = false;
+    userSessions.set(sessionId, userData);
+
+    console.log('TOTP secret stored successfully in session:', sessionId);
 
     res.json({ 
       success: true, 
@@ -262,52 +274,52 @@ router.post('/users/:userId/setup-totp', async (req, res) => {
   }
 });
 
-// Verify TOTP code
-router.post('/users/:userId/verify-totp', async (req, res) => {
+// Verify TOTP code (works with session storage)
+router.post('/users/:sessionId/verify-totp', async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { sessionId } = req.params;
     const { code } = req.body;
+
+    console.log('Verifying TOTP for session:', sessionId, 'with code:', code);
 
     if (!code) {
       return res.status(400).json({ error: 'TOTP code is required' });
     }
 
-    const db = await dbConnection.connect();
-    const usersCollection = dbConnection.getUsersCollection();
+    // Get user data from session
+    const userData = userSessions.get(sessionId);
+    if (!userData) {
+      console.log('Session not found for TOTP verification:', sessionId);
+      return res.status(404).json({ error: 'Session not found. Please restart the registration process.' });
+    }
 
-    // Get user's TOTP secret
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    
-    if (!user || !user.totpSecret) {
+    if (!userData.totpSecret) {
+      console.log('No TOTP secret found in session');
       return res.status(400).json({ 
-        error: 'TOTP not set up for this user' 
+        error: 'TOTP not set up. Please set up authenticator app first.' 
       });
     }
 
     // Verify TOTP code using speakeasy
     const verified = speakeasy.totp.verify({
-      secret: user.totpSecret,
+      secret: userData.totpSecret,
       encoding: 'base32',
       token: code,
       window: 1 // Allow 1 step tolerance (30 seconds before/after)
     });
 
     if (!verified) {
+      console.log('TOTP verification failed for session:', sessionId);
       return res.status(400).json({ 
-        error: 'Invalid TOTP code' 
+        error: 'Invalid TOTP code. Please check your authenticator app and try again.' 
       });
     }
 
-    // Mark TOTP as verified
-    await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      { 
-        $set: { 
-          totpVerified: true,
-          updatedAt: new Date()
-        }
-      }
-    );
+    // Mark TOTP as verified in session
+    userData.totpVerified = true;
+    userSessions.set(sessionId, userData);
+
+    console.log('TOTP verified successfully for session:', sessionId);
 
     res.json({ 
       success: true, 

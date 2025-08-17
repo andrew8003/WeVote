@@ -70,7 +70,6 @@ export class AuthComponent implements OnInit {
       
       this.emailVerificationSuccess = true;
       console.log('Email verification successful:', result);
-      alert('Email verified successfully!');
       
     } catch (error) {
       console.error('Error verifying email:', error);
@@ -174,7 +173,6 @@ export class AuthComponent implements OnInit {
       
       this.verificationSuccess = true;
       console.log('Authenticator app successfully verified:', result);
-      alert('Authenticator app verified successfully!');
       
     } catch (error) {
       console.error('Error verifying TOTP:', error);
@@ -182,11 +180,11 @@ export class AuthComponent implements OnInit {
     }
   }
 
-  proceedToVoting() {
+  finishRegistration() {
     if (this.emailVerificationSuccess && this.verificationSuccess) {
-      console.log('Proceeding to voting...');
-      // Navigate to voting page or next step
-      alert('Authentication complete! Ready for voting.');
+      console.log('Registration completed successfully');
+      // Navigate to completion page
+      this.router.navigate(['/registration-complete']);
     } else {
       alert('Please complete both email and authenticator app verification first.');
     }

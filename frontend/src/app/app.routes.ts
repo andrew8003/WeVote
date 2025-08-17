@@ -2,9 +2,11 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home';
 import { AuthComponent } from './auth';
 import { SecondPageComponent } from './second-page';
+import { RegistrationCompleteComponent } from './registration-complete';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'auth', component: AuthComponent },
-  { path: 'second', component: SecondPageComponent }
+  { path: 'second', component: SecondPageComponent },
+  { path: 'registration-complete', component: RegistrationCompleteComponent }
 ];
