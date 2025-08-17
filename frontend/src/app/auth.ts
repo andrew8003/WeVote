@@ -44,26 +44,19 @@ export class AuthComponent implements OnInit {
       return;
     }
 
-    try {
-      console.log('Sending verification email to:', this.userEmail);
-      
-      const result = await this.userService.sendEmailVerification(this.userEmail);
-      
-      this.emailSent = true;
-      console.log('Verification email sent successfully:', result);
-      
-      // In development, show the code (remove in production)
-      if (result.developmentCode) {
-        console.log('Development verification code:', result.developmentCode);
-        alert(`Email sent! For development, the code is: ${result.developmentCode}`);
-      } else {
-        alert('Verification email sent! Please check your email.');
-      }
-      
-    } catch (error) {
-      console.error('Error sending email:', error);
-      alert(error instanceof Error ? error.message : 'Failed to send verification email. Please try again.');
-    }
+    // Immediately switch to verification code input - don't wait for email
+    this.emailSent = true;
+    console.log('Switching to verification code input immediately');
+
+    // Send email in the background without waiting
+    this.userService.sendEmailVerification(this.userEmail)
+      .then(result => {
+        console.log('Verification email sent successfully in background:', result);
+      })
+      .catch(error => {
+        console.error('Error sending email in background:', error);
+        // Could optionally show a subtle notification here, but don't block the UI
+      });
   }
 
   async verifyEmailCode() {

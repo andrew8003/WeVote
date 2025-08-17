@@ -1,7 +1,7 @@
 const express = require('express');
 const speakeasy = require('speakeasy');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { EmailClient } = require('@azure/communication-email');
 const { ObjectId } = require('mongodb');
 const dbConnection = require('../utils/database');
 
@@ -10,17 +10,10 @@ const router = express.Router();
 // In-memory storage for user sessions (temporary storage before full registration)
 const userSessions = new Map();
 
-// Email transporter setup (you'll need to configure this)
-const createEmailTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
+// Azure Communication Services Email client
+const createEmailClient = () => {
+  console.log('Creating Azure Communication Services email client');
+  return new EmailClient(process.env.AZURE_COMMUNICATION_CONNECTION_STRING);
 };
 
 // Store user personal details in session (before authentication)
@@ -95,15 +88,22 @@ router.post('/users/:sessionId/send-email-verification', async (req, res) => {
     userData.emailCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     userSessions.set(sessionId, userData);
 
-    // Send email (configure your email settings in .env)
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      try {
-        const transporter = createEmailTransporter();
-        
-        await transporter.sendMail({
-          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-          to: email,
-          subject: 'WeVote - Email Verification Code',
+    // Force email sending - throw error if credentials missing
+    if (!process.env.AZURE_COMMUNICATION_CONNECTION_STRING) {
+      return res.status(500).json({ error: 'Azure Communication Services not configured' });
+    }
+
+    let emailSent = false;
+    let emailError = null;
+    
+    try {
+      console.log('Attempting to send email to:', email);
+      const emailClient = createEmailClient();
+      
+      const emailMessage = {
+        senderAddress: process.env.EMAIL_FROM || "DoNotReply@wevote.digital",
+        content: {
+          subject: "WeVote - Email Verification Code",
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #667eea;">WeVote Email Verification</h2>
@@ -120,19 +120,53 @@ router.post('/users/:sessionId/send-email-verification', async (req, res) => {
               </p>
             </div>
           `
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        // Continue without failing the request - code is still stored
-      }
+        },
+        recipients: {
+          to: [
+            {
+              address: email
+            }
+          ]
+        }
+      };
+      
+      console.log('Sending email with Azure Communication Services...');
+      const poller = await emailClient.beginSend(emailMessage);
+      const result = await poller.pollUntilDone();
+      
+      emailSent = true;
+      console.log('Email sent successfully via Azure Communication Services:', result.id);
+      
+    } catch (error) {
+      emailError = error;
+      console.error('AZURE EMAIL SENDING FAILED:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
     }
 
-    res.json({ 
-      success: true, 
-      message: 'Verification code sent to email',
-      // In development, return the code (remove in production)
-      ...(process.env.NODE_ENV !== 'production' && { developmentCode: verificationCode })
-    });
+    // Response based on email success/failure
+    if (emailSent) {
+      res.json({ 
+        success: true, 
+        message: 'Verification code sent to your email address. Please check your inbox.'
+      });
+    } else {
+      // Return the specific error for debugging
+      res.status(500).json({ 
+        error: 'Failed to send email via Azure Communication Services', 
+        details: emailError ? emailError.message : 'Unknown error',
+        // Only include development code if email completely failed
+        developmentCode: verificationCode,
+        debugInfo: emailError ? {
+          code: emailError.code,
+          message: emailError.message,
+          details: emailError.details
+        } : null
+      });
+    }
 
   } catch (error) {
     console.error('Error sending email verification:', error);
