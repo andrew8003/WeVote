@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { EmailClient } = require('@azure/communication-email');
 const { ObjectId } = require('mongodb');
 const dbConnection = require('../utils/database');
+const securityUtils = require('../utils/security');
 
 const router = express.Router();
 
@@ -378,61 +379,206 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
       });
     }
 
-    // Now save to MongoDB
-    const db = await dbConnection.connect();
-    const usersCollection = dbConnection.getUsersCollection();
+    // Generate unique voter ID
+    const voterId = securityUtils.generateVoterId();
 
-    // Check if user already exists with this NI number
-    const existingUser = await usersCollection.findOne({ 
-      nationalInsurance: userData.nationalInsurance 
+    // Now save to MongoDB with proper security
+    const db = await dbConnection.connect();
+    const votersCollection = dbConnection.getVotersCollection();
+    const voterAuthCollection = dbConnection.getVoterAuthCollection();
+
+    // Encrypt National Insurance number
+    const encryptedNI = securityUtils.encryptNationalInsurance(userData.nationalInsurance);
+    
+    // Hash email
+    const hashedEmail = securityUtils.hashEmail(userData.email);
+
+    // Check if user already exists (by hashed email to avoid duplicates)
+    const existingAuth = await voterAuthCollection.findOne({ 
+      emailHash: hashedEmail 
     });
 
-    let userId;
-    if (existingUser) {
-      // Update existing user
-      await usersCollection.updateOne(
-        { _id: existingUser._id },
-        { 
-          $set: {
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            postcode: userData.postcode,
-            email: userData.email,
-            emailVerified: true,
-            totpSecret: userData.totpSecret,
-            totpVerified: true,
-            updatedAt: new Date()
-          }
-        }
-      );
-      userId = existingUser._id;
-    } else {
-      // Create new user in MongoDB
-      const newUser = {
+    if (existingAuth) {
+      return res.status(400).json({ 
+        error: 'A voter with this email address is already registered.' 
+      });
+    }
+
+    try {
+      // Create voter record (personal information)
+      const voterRecord = {
+        voterId: voterId,
         firstName: userData.firstName,
         lastName: userData.lastName,
-        postcode: userData.postcode,
-        nationalInsurance: userData.nationalInsurance,
-        email: userData.email,
-        emailVerified: true,
-        totpSecret: userData.totpSecret,
-        totpVerified: true,
-        createdAt: new Date(),
+        postcode: userData.postcode.toUpperCase(),
+        nationalInsuranceEncrypted: encryptedNI.encrypted,
+        nationalInsuranceIV: encryptedNI.iv,
+        voteCast: false, // Default: no vote cast yet
+        registrationDate: new Date(),
         updatedAt: new Date()
       };
 
-      const result = await usersCollection.insertOne(newUser);
-      userId = result.insertedId;
-    }
+      // Create authentication record (auth information)
+      const authRecord = {
+        voterId: voterId, // Foreign key to voter
+        emailHash: hashedEmail,
+        emailVerified: true,
+        totpSecretHash: securityUtils.hashTotpSecret(userData.totpSecret),
+        totpVerified: true,
+        authSetupDate: new Date(),
+        lastAuthUpdate: new Date()
+      };
 
-    // Clean up session data
-    userSessions.delete(sessionId);
+      // Insert both records
+      const voterResult = await votersCollection.insertOne(voterRecord);
+      const authResult = await voterAuthCollection.insertOne(authRecord);
+
+      console.log('Voter saved with ID:', voterId);
+      console.log('Database records created:', {
+        voterObjectId: voterResult.insertedId,
+        authObjectId: authResult.insertedId
+      });
+
+      // Clean up session data
+      userSessions.delete(sessionId);
+
+      res.json({ 
+        success: true, 
+        voterId: voterId,
+        message: 'Registration completed successfully! Voter records created securely.' 
+      });
+
+    } catch (dbError) {
+      console.error('Database insertion error:', dbError);
+      
+      // Clean up any partial records if one insert succeeded and other failed
+      try {
+        await votersCollection.deleteOne({ voterId: voterId });
+        await voterAuthCollection.deleteOne({ voterId: voterId });
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      
+      throw dbError;
+    }
 
     res.json({ 
       success: true, 
       userId: userId,
       message: 'Registration completed successfully! User saved to database.' 
     });
+
+  } catch (error) {
+    console.error('Error completing registration:', error);
+    res.status(500).json({ error: 'Failed to complete registration' });
+  }
+});
+
+// Complete registration endpoint (called from frontend)
+router.post('/users/:sessionId/complete-registration', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    console.log('Completing registration for session:', sessionId);
+
+    // Get user data from session
+    const userData = userSessions.get(sessionId);
+    if (!userData) {
+      console.log('Session not found for completion:', sessionId);
+      return res.status(404).json({ error: 'Session not found. Please restart the registration process.' });
+    }
+
+    // Verify both email and TOTP are verified
+    if (!userData.emailVerified) {
+      return res.status(400).json({ error: 'Email verification is required before completing registration.' });
+    }
+
+    if (!userData.totpVerified) {
+      return res.status(400).json({ error: 'Authenticator app verification is required before completing registration.' });
+    }
+
+    // Generate unique voter ID
+    const voterId = securityUtils.generateVoterId();
+
+    // Save to MongoDB with proper security
+    const db = await dbConnection.connect();
+    const votersCollection = dbConnection.getVotersCollection();
+    const voterAuthCollection = dbConnection.getVoterAuthCollection();
+
+    // Encrypt National Insurance number
+    const encryptedNI = securityUtils.encryptNationalInsurance(userData.nationalInsurance);
+    
+    // Hash email
+    const hashedEmail = securityUtils.hashEmail(userData.email);
+
+    // Check if user already exists (by hashed email to avoid duplicates)
+    const existingAuth = await voterAuthCollection.findOne({ 
+      emailHash: hashedEmail 
+    });
+
+    if (existingAuth) {
+      return res.status(400).json({ 
+        error: 'A voter with this email address is already registered.' 
+      });
+    }
+
+    try {
+      // Create voter record (personal information)
+      const voterRecord = {
+        voterId: voterId,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        postcode: userData.postcode.toUpperCase(),
+        nationalInsuranceEncrypted: encryptedNI.encrypted,
+        nationalInsuranceIV: encryptedNI.iv,
+        voteCast: false, // Default: no vote cast yet
+        registrationDate: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Create authentication record (auth information)
+      const authRecord = {
+        voterId: voterId, // Foreign key to voter
+        emailHash: hashedEmail,
+        emailVerified: true,
+        totpSecretHash: securityUtils.hashTotpSecret(userData.totpSecret),
+        totpVerified: true,
+        authSetupDate: new Date(),
+        lastAuthUpdate: new Date()
+      };
+
+      // Insert both records
+      const voterResult = await votersCollection.insertOne(voterRecord);
+      const authResult = await voterAuthCollection.insertOne(authRecord);
+
+      console.log('Voter saved with ID:', voterId);
+      console.log('Database records created:', {
+        voterObjectId: voterResult.insertedId,
+        authObjectId: authResult.insertedId
+      });
+
+      // Clean up session data
+      userSessions.delete(sessionId);
+
+      res.json({ 
+        success: true, 
+        voterId: voterId,
+        message: 'Registration completed successfully! Your voter ID is: ' + voterId
+      });
+
+    } catch (dbError) {
+      console.error('Database insertion error:', dbError);
+      
+      // Clean up any partial records if one insert succeeded and other failed
+      try {
+        await votersCollection.deleteOne({ voterId: voterId });
+        await voterAuthCollection.deleteOne({ voterId: voterId });
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      
+      throw dbError;
+    }
 
   } catch (error) {
     console.error('Error completing registration:', error);

@@ -48,12 +48,22 @@ class DatabaseConnection {
     return this.db;
   }
 
-  // Get authenticator collection (your collection name)
+  // Get voters collection (personal information)
+  getVotersCollection() {
+    return this.getDb().collection('voters');
+  }
+
+  // Get voter authentication collection (auth data)
+  getVoterAuthCollection() {
+    return this.getDb().collection('voter_auth');
+  }
+
+  // Get authenticator collection (legacy - for backwards compatibility)
   getUsersCollection() {
     return this.getDb().collection('authenticator');
   }
 
-  // Get email verification codes collection
+  // Get email verification codes collection (legacy)
   getEmailCodesCollection() {
     return this.getDb().collection('email_verification_codes');
   }

@@ -180,11 +180,22 @@ export class AuthComponent implements OnInit {
     }
   }
 
-  finishRegistration() {
+  async finishRegistration() {
     if (this.emailVerificationSuccess && this.verificationSuccess) {
-      console.log('Registration completed successfully');
-      // Navigate to completion page
-      this.router.navigate(['/registration-complete']);
+      try {
+        console.log('Completing registration and saving to database...');
+        
+        // Complete registration in backend (save to MongoDB)
+        const result = await this.userService.completeRegistration();
+        
+        console.log('Registration completed successfully:', result);
+        
+        // Navigate to completion page
+        this.router.navigate(['/registration-complete']);
+      } catch (error) {
+        console.error('Error completing registration:', error);
+        alert(error instanceof Error ? error.message : 'Failed to complete registration. Please try again.');
+      }
     } else {
       alert('Please complete both email and authenticator app verification first.');
     }

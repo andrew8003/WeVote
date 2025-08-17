@@ -156,4 +156,25 @@ export class UserService {
   setCurrentUserId(userId: string): void {
     this.currentUserId = userId;
   }
+
+  // Complete registration and save to MongoDB
+  async completeRegistration(): Promise<any> {
+    if (!this.currentUserId) {
+      throw new Error('No user session available');
+    }
+
+    const response = await fetch(`${this.baseUrl}/users/${this.currentUserId}/complete-registration`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to complete registration');
+    }
+
+    return await response.json();
+  }
 }

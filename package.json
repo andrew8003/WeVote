@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "@azure/communication-email": "^1.0.0"
+    "@azure/communication-email": "^1.0.0",
+    "bcrypt": "^6.0.0",
+    "crypto-js": "^4.2.0",
+    "uuid": "^11.1.0"
   }
 }
