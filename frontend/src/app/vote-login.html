@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeVote - Secure Voting Login</title>
+    <link rel="stylesheet" href="vote-login.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>WeVote</h1>
+                <div class="tagline">Secure Digital Democracy</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="welcome-section">
+                <h2>Welcome to Voting Day</h2>
+                <div class="info-box">
+                    <h3>🗳️ Cast Your Vote Securely</h3>
+                    <p>
+                        Today is your opportunity to participate in our democratic process. 
+                        WeVote provides a secure, encrypted platform for digital voting that 
+                        ensures your voice is heard while maintaining complete ballot secrecy.
+                    </p>
+                    
+                    <div class="voting-info">
+                        <h4>Before You Begin:</h4>
+                        <ul>
+                            <li>✅ Ensure you're in a private location</li>
+                            <li>✅ Have your email address ready</li>
+                            <li>✅ Have your authenticator app available</li>
+                            <li>✅ Allow sufficient time to complete your ballot</li>
+                        </ul>
+                    </div>
+
+                    <div class="security-notice">
+                        <p><strong>🔒 Your Vote is Secure:</strong> All votes are encrypted end-to-end and cannot be traced back to individual voters. Your privacy and the integrity of the election are our top priorities.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-section">
+                <button id="loginBtn" class="primary-btn" (click)="onLoginClick()">
+                    🔐 Login to Vote
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>2025 WeVote System. Ensuring democratic participation through secure technology.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,242 @@
+/* vote-login.css - Voting Day Login Page Styles */
+/* Consistent with other WeVote pages */
+
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    padding: 30px;
+    text-align: center;
+    animation: slideIn 0.6s ease-out;
+    overflow-y: auto;
+    margin: 20px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.header .logo h1 {
+    color: #4a5568;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.header .tagline {
+    color: #718096;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 30px;
+}
+
+.content {
+    margin: 30px 0;
+}
+
+.welcome-section h2 {
+    color: #2d3748;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.info-box {
+    background: #f7fafc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.info-box h3 {
+    color: #2d3748;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.info-box p {
+    color: #4a5568;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.voting-info {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #e2e8f0;
+}
+
+.voting-info h4 {
+    color: #2d3748;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.voting-info ul {
+    list-style: none;
+    padding: 0;
+}
+
+.voting-info li {
+    color: #4a5568;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    padding-left: 10px;
+}
+
+.security-notice {
+    background: #edf2f7;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.security-notice p {
+    color: #2d3748;
+    font-size: 0.95rem;
+    margin: 0;
+    text-align: center;
+}
+
+.login-section {
+    margin: 30px 0;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    margin-bottom: 20px;
+    min-width: 200px;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+}
+
+.help-text {
+    margin-top: 20px;
+}
+
+.help-text p {
+    color: #718096;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.footer p {
+    color: #a0aec0;
+    font-size: 0.85rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 30px 20px;
+    }
+    
+    .header .logo h1 {
+        font-size: 2rem;
+    }
+    
+    .welcome-section h2 {
+        font-size: 1.5rem;
+    }
+    
+    .info-box {
+        padding: 20px 15px;
+    }
+    
+    .primary-btn {
+        width: 100%;
+        padding: 16px 20px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 25px 15px;
+    }
+    
+    .header .logo h1 {
+        font-size: 1.8rem;
+    }
+    
+    .welcome-section h2 {
+        font-size: 1.3rem;
+    }
+    
+    .info-box {
+        padding: 15px;
+    }
+    
+    .voting-info {
+        padding: 15px;
+    }
+}
