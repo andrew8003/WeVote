@@ -13,8 +13,8 @@
     <!-- Email Verification Card -->
     <div class="auth-card" [class.completed]="emailVerificationSuccess">
       <div class="card-header">
-        <h3>📧 Email Verification</h3>
-        <span class="status" *ngIf="emailVerificationSuccess">✅ Verified</span>
+        <h3>Email Verification</h3>
+        <span class="status" *ngIf="emailVerificationSuccess">Verified</span>
       </div>
       
       <div class="card-content" *ngIf="!emailVerificationSuccess">
@@ -27,19 +27,31 @@
             id="email"
             [(ngModel)]="userEmail" 
             placeholder="Enter your email address"
-            [disabled]="emailSent"
+            [disabled]="emailSent || isSendingEmail"
           >
         </div>
         
         <button 
           class="primary-button" 
           (click)="sendEmailVerification()"
-          [disabled]="emailSent"
+          [disabled]="emailSent || isSendingEmail"
         >
-          {{ emailSent ? 'Email Sent!' : 'Send Verification Email' }}
+          <span *ngIf="!isSendingEmail && !emailSent">Send Verification Email</span>
+          <span *ngIf="isSendingEmail">
+            <span class="loading-spinner"></span>
+            Sending Email...
+          </span>
+          <span *ngIf="emailSent && !isSendingEmail">Email Sent!</span>
         </button>
         
         <div class="verification-section" *ngIf="emailSent">
+          <div class="email-sent-notice">
+            <p>✅ Verification email sent! Check your inbox and spam folder.</p>
+            <p *ngIf="emailSentTime" class="timestamp">
+              Sent at: {{ emailSentTime | date:'short' }}
+            </p>
+          </div>
+
           <div class="form-group">
             <label for="emailCode">Verification Code</label>
             <input 
@@ -48,15 +60,49 @@
               [(ngModel)]="emailVerificationCode" 
               placeholder="Enter 6-digit code"
               maxlength="6"
+              [disabled]="isVerifyingEmail"
             >
           </div>
           
           <button 
             class="primary-button" 
             (click)="verifyEmailCode()"
+            [disabled]="isVerifyingEmail"
           >
-            Verify Email
+            <span *ngIf="!isVerifyingEmail">Verify Email</span>
+            <span *ngIf="isVerifyingEmail">
+              <span class="loading-spinner"></span>
+              Verifying...
+            </span>
           </button>
+
+          <div class="resend-section">
+            <button 
+              class="secondary-button" 
+              (click)="resendEmail()"
+              [disabled]="!canResendEmail || isSendingEmail"
+              *ngIf="!canResendEmail"
+            >
+              <span *ngIf="!isSendingEmail">Resend Email ({{ getResendTimeString() }})</span>
+              <span *ngIf="isSendingEmail">
+                <span class="loading-spinner"></span>
+                Sending...
+              </span>
+            </button>
+
+            <button 
+              class="secondary-button" 
+              (click)="resendEmail()"
+              [disabled]="isSendingEmail"
+              *ngIf="canResendEmail"
+            >
+              <span *ngIf="!isSendingEmail">Resend Email</span>
+              <span *ngIf="isSendingEmail">
+                <span class="loading-spinner"></span>
+                Sending...
+              </span>
+            </button>
+          </div>
           
           <button 
             class="secondary-button" 
@@ -68,15 +114,15 @@
       </div>
       
       <div class="card-content success" *ngIf="emailVerificationSuccess">
-        <p>✅ Email verification completed successfully!</p>
+        <p>Email verification completed successfully!</p>
       </div>
     </div>
 
     <!-- Authenticator App Card -->
     <div class="auth-card" [class.completed]="verificationSuccess">
       <div class="card-header">
-        <h3>📱 Authenticator App</h3>
-        <span class="status" *ngIf="verificationSuccess">✅ Verified</span>
+        <h3>Authenticator App</h3>
+        <span class="status" *ngIf="verificationSuccess">Verified</span>
       </div>
       
       <div class="card-content" *ngIf="!verificationSuccess">
@@ -141,8 +187,13 @@
           <button 
             class="primary-button" 
             (click)="verifyAuthenticatorCode()"
+            [disabled]="isVerifyingAuth"
           >
-            Verify Code
+            <span *ngIf="!isVerifyingAuth">Verify Code</span>
+            <span *ngIf="isVerifyingAuth">
+              <span class="loading-spinner"></span>
+              Verifying...
+            </span>
           </button>
           
           <button 
@@ -155,7 +206,7 @@
       </div>
       
       <div class="card-content success" *ngIf="verificationSuccess">
-        <p>✅ Authenticator app verification completed successfully!</p>
+        <p>Authenticator app verification completed successfully!</p>
       </div>
     </div>
   </div>
@@ -165,8 +216,13 @@
     <button 
       class="proceed-button" 
       (click)="finishRegistration()"
+      [disabled]="isFinishingRegistration"
     >
-      ✅ Finish
+      <span *ngIf="!isFinishingRegistration">Finish</span>
+      <span *ngIf="isFinishingRegistration">
+        <span class="loading-spinner"></span>
+        Saving to Database...
+      </span>
     </button>
   </div>
 </div>

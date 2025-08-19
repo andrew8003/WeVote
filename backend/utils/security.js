@@ -40,9 +40,56 @@ class SecurityUtils {
     return 'VTR-' + crypto.randomBytes(8).toString('hex').toUpperCase();
   }
 
-  // Hash TOTP secret for storage
+  // Encrypt TOTP secret for storage (instead of hashing)
+  encryptTotpSecret(secret) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let encrypted = cipher.update(secret, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return {
+      encrypted: encrypted,
+      iv: iv.toString('hex')
+    };
+  }
+
+  // Decrypt TOTP secret for verification
+  decryptTotpSecret(encryptedData) {
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const decipher = crypto.createDecipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
+
+  // Hash TOTP secret for storage (legacy - keeping for compatibility)
   hashTotpSecret(secret) {
     return crypto.createHash('sha256').update(secret).digest('hex');
+  }
+
+  // Encrypt voter access code
+  encryptAccessCode(accessCode) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let encrypted = cipher.update(accessCode.toString(), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return {
+      encrypted: encrypted,
+      iv: iv.toString('hex')
+    };
+  }
+
+  // Decrypt voter access code
+  decryptAccessCode(encryptedData) {
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const decipher = crypto.createDecipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
+
+  // Hash National Insurance number for comparison
+  hashNationalInsurance(niNumber) {
+    return crypto.createHash('sha256').update(niNumber.toUpperCase()).digest('hex');
   }
 }
 

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeVote - Vote Complete</title>
+    <link rel="stylesheet" href="vote-complete.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>WeVote</h1>
+                <div class="tagline">Vote Successfully Cast</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="success-section">
+                <div class="success-icon">🎉</div>
+                <h2>Your Vote Has Been Cast!</h2>
+                
+                <div class="confirmation-box">
+                    <h3>✅ Confirmation Details</h3>
+                    <div class="confirmation-info">
+                        <p><strong>Status:</strong> Vote successfully recorded and encrypted</p>
+                        <p><strong>Time:</strong> {{submissionTime}}</p>
+                        <p><strong>Election:</strong> *DEMO* General Election 2025</p>
+                        <p><strong>Ballot ID:</strong> {{ballotId}}</p>
+                    </div>
+                    
+                    <div class="security-confirmation">
+                        <h4>🔒 Your Vote is Secure</h4>
+                        <ul>
+                            <li>Your ballot has been encrypted and anonymized</li>
+                            <li>Your vote cannot be traced back to your identity</li>
+                            <li>Your choices are securely stored for counting</li>
+                            <li>The integrity of your vote is cryptographically protected</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>📋 What Happens Next?</h3>
+                    <div class="steps-info">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <div class="step-content">
+                                <strong>Vote Counting</strong>
+                                <p>Your encrypted vote will be included in the official count when polls close</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <div class="step-content">
+                                <strong>Results Publication</strong>
+                                <p>Election results will be published after all votes are counted and verified</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <div class="step-content">
+                                <strong>Audit Trail</strong>
+                                <p>The voting system maintains an auditable record while preserving voter privacy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="important-notice">
+                    <h4>⚠️ Important Information</h4>
+                    <ul>
+                        <li><strong>One Vote Only:</strong> You cannot vote again in this election</li>
+                        <li><strong>Vote Changes:</strong> Your vote cannot be modified after submission</li>
+                        <li><strong>Confirmation:</strong> Keep this page information for your records</li>
+                        <li><strong>Demo System:</strong> This is a demonstration - no real votes were cast</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="actions">
+                <button class="primary-btn" (click)="returnToHome()">
+                    🏠 Return to Home
+                </button>
+                
+                <button class="secondary-btn" (click)="printConfirmation()">
+                    🖨️ Print Confirmation
+                </button>
+            </div>
+            
+            <div class="footer-text">
+                <p>&copy; 2025 WeVote System. Thank you for participating in secure digital democracy.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

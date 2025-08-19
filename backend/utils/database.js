@@ -58,6 +58,16 @@ class DatabaseConnection {
     return this.getDb().collection('voter_auth');
   }
 
+  // Get candidates collection
+  getCandidatesCollection() {
+    return this.getDb().collection('candidates');
+  }
+
+  // Get cast votes collection (anonymous vote records)
+  getCastVotesCollection() {
+    return this.getDb().collection('cast_votes');
+  }
+
   // Get authenticator collection (legacy - for backwards compatibility)
   getUsersCollection() {
     return this.getDb().collection('authenticator');

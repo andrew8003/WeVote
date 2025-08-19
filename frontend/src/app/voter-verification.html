@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeVote - Voter Verification</title>
+    <link rel="stylesheet" href="voter-verification.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>WeVote</h1>
+                <div class="tagline">Voter Verification</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <div class="verification-section">
+                    <h2>Verify Your Identity to Vote</h2>
+                    
+                    <div class="info-box">
+                        <h3>Authentication Required</h3>
+                        <p>
+                            To access your ballot, please provide the following verification details. 
+                            These ensure the security and integrity of your vote while maintaining ballot secrecy.
+                        </p>
+                        
+                        <div class="verification-steps">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <span class="step-text">Email verification code (sent when polls opened)</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <span class="step-text">Your National Insurance number</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">3</span>
+                                <span class="step-text">6-digit code from your authenticator app</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h4>Need Help?</h4>
+                        <ul>
+                            <li><strong>Email Code:</strong> Check your inbox for the verification email sent when polls opened</li>
+                            <li><strong>Authenticator App:</strong> Use the same app you set up during registration (Google Authenticator, Authy, etc.)</li>
+                            <li><strong>National Insurance:</strong> This is the same number you used during voter registration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+
+                <form class="verification-form" (ngSubmit)="onSubmitVerification()" [formGroup]="verificationForm">
+                    <div class="form-group">
+                        <label for="emailCode">Email Verification Code</label>
+                        <input 
+                            type="text" 
+                            id="emailCode" 
+                            formControlName="emailCode"
+                            placeholder="Enter 6-digit code from email"
+                            maxlength="6"
+                            class="form-input"
+                            [class.error]="verificationForm.get('emailCode')?.invalid && verificationForm.get('emailCode')?.touched">
+                        <div class="error-message" *ngIf="verificationForm.get('emailCode')?.invalid && verificationForm.get('emailCode')?.touched">
+                            Please enter the 6-digit code from your email
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nationalInsurance">National Insurance Number</label>
+                        <input 
+                            type="text" 
+                            id="nationalInsurance" 
+                            formControlName="nationalInsurance"
+                            placeholder="e.g. AB123456C"
+                            class="form-input"
+                            [class.error]="verificationForm.get('nationalInsurance')?.invalid && verificationForm.get('nationalInsurance')?.touched">
+                        <div class="error-message" *ngIf="verificationForm.get('nationalInsurance')?.invalid && verificationForm.get('nationalInsurance')?.touched">
+                            Please enter a valid National Insurance number
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totpCode">Authenticator App Code</label>
+                        <input 
+                            type="text" 
+                            id="totpCode" 
+                            formControlName="totpCode"
+                            placeholder="Enter 6-digit TOTP code"
+                            maxlength="6"
+                            class="form-input"
+                            [class.error]="verificationForm.get('totpCode')?.invalid && verificationForm.get('totpCode')?.touched">
+                        <div class="error-message" *ngIf="verificationForm.get('totpCode')?.invalid && verificationForm.get('totpCode')?.touched">
+                            Please enter the 6-digit code from your authenticator app
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn" [disabled]="verificationForm.invalid || isVerifying">
+                            <span *ngIf="!isVerifying">Access My Ballot</span>
+                            <span *ngIf="isVerifying">Verifying...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer">
+            <button class="back-btn" (click)="goBack()">
+                ← Previous Page
+            </button>
+            <p>&copy; 2025 WeVote System. Secure voting for democratic participation.</p>
+        </div>
+    </div>
+</body>
+</html>

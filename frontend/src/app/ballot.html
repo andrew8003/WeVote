@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeVote - Your Ballot</title>
+    <link rel="stylesheet" href="ballot.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>WeVote</h1>
+                <div class="tagline">Your Secure Ballot</div>
+            </div>
+            <div class="voter-info" *ngIf="voterInfo">
+                <p><strong>Voter:</strong> {{voterInfo.firstName}} {{voterInfo.lastName}}</p>
+                <p><strong>ID:</strong> {{voterInfo.voterId}}</p>
+                <p><strong>Postcode:</strong> {{voterInfo.postcode}}</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="ballot-section">
+                <div class="ballot-header">
+                    <h2>🗳️ *DEMO* General Election Ballot</h2>
+                    <div class="election-info">
+                        <p><strong>Election Date:</strong> August 19, 2025</p>
+                        <p><strong>Constituency:</strong> {{constituency}}</p>
+                        <p><strong>Ballot Type:</strong> Demonstration Ballot</p>
+                    </div>
+                </div>
+
+                <div class="voting-instructions">
+                    <h3>📋 Voting Instructions</h3>
+                    <div class="instructions-box">
+                        <ol>
+                            <li><strong>Read all options carefully</strong> before making your selection</li>
+                            <li><strong>Select only ONE candidate</strong> for each race/question</li>
+                            <li><strong>Review your choices</strong> before submitting your ballot</li>
+                            <li><strong>Click "Cast Ballot"</strong> when you're ready to submit</li>
+                            <li><strong>Once submitted, your vote cannot be changed</strong></li>
+                        </ol>
+                        
+                        <div class="security-notice">
+                            <p><strong>🔒 Your Privacy:</strong> Your ballot choices are encrypted and cannot be traced back to your identity. Your vote remains secret while being securely counted.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="isLoadingCandidates" class="loading-section">
+                    <h3>Loading candidates for constituency {{constituency}}...</h3>
+                    <p>Please wait while we retrieve your ballot options.</p>
+                </div>
+
+                <form *ngIf="!isLoadingCandidates && candidates" class="ballot-form" (ngSubmit)="onSubmitBallot()" [formGroup]="ballotForm">
+                    <div class="race-section">
+                        <h4>Member of Parliament</h4>
+                        <p class="race-description">Choose ONE candidate to represent your constituency in Parliament.</p>
+                        
+                        <div class="candidates">
+                            <div class="candidate-option" *ngFor="let candidate of candidates.memberOfParliament; let i = index">
+                                <input type="radio" [id]="'mp-' + candidate.candidateId" [value]="candidate.candidateId" formControlName="mpChoice">
+                                <label [for]="'mp-' + candidate.candidateId" class="candidate-label">
+                                    <div class="candidate-info">
+                                        <strong>{{candidate.name}}</strong>
+                                        <span class="party">{{candidate.party}}</span>
+                                        <p class="platform">{{candidate.partyLine}}</p>
+                                        <div class="candidate-details" *ngIf="candidate.biography">
+                                            <small>{{candidate.biography}}</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="race-section">
+                        <h4>Local Council Representative</h4>
+                        <p class="race-description">Choose ONE candidate for your local council.</p>
+                        
+                        <div class="candidates">
+                            <div class="candidate-option" *ngFor="let candidate of candidates.localCouncil; let i = index">
+                                <input type="radio" [id]="'council-' + candidate.candidateId" [value]="candidate.candidateId" formControlName="councilChoice">
+                                <label [for]="'council-' + candidate.candidateId" class="candidate-label">
+                                    <div class="candidate-info">
+                                        <strong>{{candidate.name}}</strong>
+                                        <span class="party">{{candidate.party}}</span>
+                                        <p class="platform">{{candidate.partyLine}}</p>
+                                        <div class="candidate-details" *ngIf="candidate.biography">
+                                            <small>{{candidate.biography}}</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ballot-review">
+                        <h4>Review Your Choices</h4>
+                        <div class="review-section">
+                            <div class="choice-summary">
+                                <p><strong>Member of Parliament:</strong> 
+                                    <span *ngIf="ballotForm.get('mpChoice')?.value">{{getCandidateName(ballotForm.get('mpChoice')?.value)}}</span>
+                                    <span *ngIf="!ballotForm.get('mpChoice')?.value" class="no-selection">No selection made</span>
+                                </p>
+                                <p><strong>Local Council:</strong> 
+                                    <span *ngIf="ballotForm.get('councilChoice')?.value">{{getCouncilCandidateName(ballotForm.get('councilChoice')?.value)}}</span>
+                                    <span *ngIf="!ballotForm.get('councilChoice')?.value" class="no-selection">No selection made</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn" (click)="goBack()">
+                            ← Review Verification
+                        </button>
+                        
+                        <button type="submit" class="primary-btn" [disabled]="ballotForm.invalid || isSubmitting">
+                            <span *ngIf="!isSubmitting">🗳️ Cast My Ballot</span>
+                            <span *ngIf="isSubmitting">Submitting...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="demo-notice">
+                <p><strong>⚠️ DEMONSTRATION SYSTEM:</strong> This is a demo of the WeVote platform. No real votes are being cast.</p>
+            </div>
+            <p>&copy; 2025 WeVote System. Secure digital democracy.</p>
+        </div>
+    </div>
+</body>
+</html>

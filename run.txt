@@ -6,7 +6,7 @@ Backend API: http://localhost:3000
 
 
 cd frontend
-npx ng serve
+npm start
 ➜  Local:   http://localhost:4200/
 
 

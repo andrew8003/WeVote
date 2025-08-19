@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { UserService } from './services/user.service';
   templateUrl: './auth.html',
   styleUrl: './auth.css'
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
   showQRCode = false;
   qrCodeDataURL = '';
   authCode = '';
@@ -26,15 +26,34 @@ export class AuthComponent implements OnInit {
   emailSent = false;
   emailVerificationCode = '';
   emailVerificationSuccess = false;
+  
+  // Loading states
+  isSendingEmail = false;
+  isVerifyingEmail = false;
+  isVerifyingAuth = false;
+  isFinishingRegistration = false;
+  
+  // Email resend functionality
+  emailSentTime: Date | null = null;
+  canResendEmail = false;
+  resendCountdown = 0;
+  private resendTimer: any;
 
   constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit() {
     // Check if user has saved personal details
-    if (!this.userService.hasCurrentUser()) {
+    if (!this.userService.hasCurrentSession()) {
       alert('Please complete your personal details first.');
       this.router.navigate(['/']);
       return;
+    }
+  }
+
+  ngOnDestroy() {
+    // Clean up timer
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
     }
   }
 
@@ -44,19 +63,74 @@ export class AuthComponent implements OnInit {
       return;
     }
 
-    // Immediately switch to verification code input - don't wait for email
-    this.emailSent = true;
-    console.log('Switching to verification code input immediately');
+    if (this.isSendingEmail) {
+      return; // Prevent multiple clicks
+    }
 
-    // Send email in the background without waiting
-    this.userService.sendEmailVerification(this.userEmail)
-      .then(result => {
-        console.log('Verification email sent successfully in background:', result);
-      })
-      .catch(error => {
-        console.error('Error sending email in background:', error);
-        // Could optionally show a subtle notification here, but don't block the UI
-      });
+    this.isSendingEmail = true;
+
+    try {
+      // First add email to the session
+      await this.userService.addEmail(this.userEmail);
+      console.log('Email added to session successfully');
+
+      // Then send verification email
+      await this.userService.sendEmailVerification();
+      console.log('Verification email sent successfully');
+
+      // Switch to verification code input
+      this.emailSent = true;
+      this.emailSentTime = new Date();
+      this.startResendTimer();
+      console.log('Switching to verification code input');
+
+    } catch (error: any) {
+      console.error('Error sending email verification:', error);
+      alert(`Error: ${error.message || 'Failed to send verification email'}`);
+    } finally {
+      this.isSendingEmail = false;
+    }
+  }
+
+  private startResendTimer() {
+    this.canResendEmail = false;
+    this.resendCountdown = 300; // 5 minutes in seconds
+    
+    this.resendTimer = setInterval(() => {
+      this.resendCountdown--;
+      if (this.resendCountdown <= 0) {
+        this.canResendEmail = true;
+        clearInterval(this.resendTimer);
+      }
+    }, 1000);
+  }
+
+  async resendEmail() {
+    if (!this.canResendEmail || this.isSendingEmail) {
+      return;
+    }
+
+    this.isSendingEmail = true;
+
+    try {
+      await this.userService.sendEmailVerification();
+      console.log('Verification email resent successfully');
+      
+      this.emailSentTime = new Date();
+      this.startResendTimer();
+      
+    } catch (error: any) {
+      console.error('Error resending email verification:', error);
+      alert(`Error: ${error.message || 'Failed to resend verification email'}`);
+    } finally {
+      this.isSendingEmail = false;
+    }
+  }
+
+  getResendTimeString(): string {
+    const minutes = Math.floor(this.resendCountdown / 60);
+    const seconds = this.resendCountdown % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   async verifyEmailCode() {
@@ -65,15 +139,28 @@ export class AuthComponent implements OnInit {
       return;
     }
 
+    if (this.isVerifyingEmail) {
+      return; // Prevent multiple clicks
+    }
+
+    this.isVerifyingEmail = true;
+
     try {
       const result = await this.userService.verifyEmailCode(this.emailVerificationCode);
       
       this.emailVerificationSuccess = true;
       console.log('Email verification successful:', result);
       
+      // Clean up timer
+      if (this.resendTimer) {
+        clearInterval(this.resendTimer);
+      }
+      
     } catch (error) {
       console.error('Error verifying email:', error);
       alert(error instanceof Error ? error.message : 'Invalid verification code. Please check your email and try again.');
+    } finally {
+      this.isVerifyingEmail = false;
     }
   }
 
@@ -87,6 +174,13 @@ export class AuthComponent implements OnInit {
     this.emailSent = false;
     this.emailVerificationCode = '';
     this.emailVerificationSuccess = false;
+    this.emailSentTime = null;
+    this.canResendEmail = false;
+    this.resendCountdown = 0;
+    
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+    }
   }
 
   setupAuthenticatorApp() {
@@ -168,6 +262,12 @@ export class AuthComponent implements OnInit {
       return;
     }
 
+    if (this.isVerifyingAuth) {
+      return; // Prevent multiple clicks
+    }
+
+    this.isVerifyingAuth = true;
+
     try {
       const result = await this.userService.verifyTOTP(code);
       
@@ -177,27 +277,38 @@ export class AuthComponent implements OnInit {
     } catch (error) {
       console.error('Error verifying TOTP:', error);
       alert(error instanceof Error ? error.message : 'Invalid code. Please try again with the current code from your authenticator app.');
+    } finally {
+      this.isVerifyingAuth = false;
     }
   }
 
   async finishRegistration() {
-    if (this.emailVerificationSuccess && this.verificationSuccess) {
-      try {
-        console.log('Completing registration and saving to database...');
-        
-        // Complete registration in backend (save to MongoDB)
-        const result = await this.userService.completeRegistration();
-        
-        console.log('Registration completed successfully:', result);
-        
-        // Navigate to completion page
-        this.router.navigate(['/registration-complete']);
-      } catch (error) {
-        console.error('Error completing registration:', error);
-        alert(error instanceof Error ? error.message : 'Failed to complete registration. Please try again.');
-      }
-    } else {
+    if (!this.emailVerificationSuccess || !this.verificationSuccess) {
       alert('Please complete both email and authenticator app verification first.');
+      return;
+    }
+
+    if (this.isFinishingRegistration) {
+      return; // Prevent multiple clicks
+    }
+
+    this.isFinishingRegistration = true;
+
+    try {
+      console.log('Completing registration and saving to database...');
+      
+      // Complete registration in backend (save to MongoDB)
+      const result = await this.userService.completeRegistration();
+      
+      console.log('Registration completed successfully:', result);
+      
+      // Navigate to completion page
+      this.router.navigate(['/registration-complete']);
+    } catch (error) {
+      console.error('Error completing registration:', error);
+      alert(error instanceof Error ? error.message : 'Failed to complete registration. Please try again.');
+    } finally {
+      this.isFinishingRegistration = false;
     }
   }
 

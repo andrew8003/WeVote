@@ -383,6 +383,14 @@ router.post('/users/:sessionId/verify-email', async (req, res) => {
 
     console.log('Email verified successfully for session:', sessionId);
 
+    // Send voting notification email with voter verification code
+    try {
+      await sendVotingNotificationEmail(userData.email);
+    } catch (emailError) {
+      console.error('Failed to send voting notification email:', emailError);
+      // Don't fail the verification if the notification email fails
+    }
+
     res.json({ 
       success: true, 
       message: 'Email verified successfully' 
@@ -597,24 +605,13 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
         authObjectId: authResult.insertedId
       });
 
-      // Send voting notification email with voter verification code
-      try {
-        console.log('Sending voting notification email to:', userData.email);
-        await sendVotingNotificationEmail(userData.email);
-        console.log('Voting notification email sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send voting notification email:', emailError);
-        // Don't fail the registration if the notification email fails
-        // The voter can still vote, they just won't get the immediate notification
-      }
-
       // Clean up session data
       userSessions.delete(sessionId);
 
       res.json({ 
         success: true, 
         voterId: voterId,
-        message: 'Registration completed successfully! Your voting access code has been sent to your email.' 
+        message: 'Registration completed successfully! Voter records created securely.' 
       });
 
     } catch (dbError) {
@@ -643,8 +640,8 @@ router.post('/verify-voter', async (req, res) => {
     const { emailCode, nationalInsurance, totpCode } = req.body;
 
     console.log('Voter verification attempt:', {
-      emailCode: emailCode,
-      nationalInsurance: nationalInsurance,
+      emailCode: emailCode ? 'PROVIDED' : 'MISSING',
+      nationalInsurance: nationalInsurance ? 'PROVIDED' : 'MISSING',
       totpCode: totpCode ? 'PROVIDED' : 'MISSING'
     });
 
@@ -676,18 +673,13 @@ router.post('/verify-voter', async (req, res) => {
     // Check each eligible voter to see if they match the provided credentials
     for (const voter of eligibleVoters) {
       try {
-        console.log('Checking voter:', voter.voterId);
-        
         // Decrypt and compare National Insurance number
         const decryptedNI = securityUtils.decryptNationalInsurance({
           encrypted: voter.nationalInsuranceEncrypted,
           iv: voter.nationalInsuranceIV
         });
 
-        console.log('Decrypted NI for voter', voter.voterId, ':', decryptedNI);
-        console.log('Provided NI (cleaned):', nationalInsurance.replace(/\s+/g, '').toUpperCase());
-
-        if (decryptedNI.toUpperCase() === nationalInsurance.replace(/\s+/g, '').toUpperCase()) {
+        if (decryptedNI.toUpperCase() === nationalInsurance.toUpperCase()) {
           console.log('National Insurance match found for voter:', voter.voterId);
           
           // Get the corresponding auth record
@@ -701,11 +693,6 @@ router.post('/verify-voter', async (req, res) => {
           // Check if access code exists and hasn't expired
           if (!authRecord.accessCodeEncrypted || !authRecord.accessCodeIV) {
             console.log('No access code found for voter:', voter.voterId);
-            console.log('Auth record:', {
-              hasAccessCode: !!authRecord.accessCodeEncrypted,
-              hasIV: !!authRecord.accessCodeIV,
-              accessCodeExpires: authRecord.accessCodeExpires
-            });
             continue;
           }
 
@@ -719,9 +706,6 @@ router.post('/verify-voter', async (req, res) => {
             encrypted: authRecord.accessCodeEncrypted,
             iv: authRecord.accessCodeIV
           });
-
-          console.log('Decrypted access code for voter', voter.voterId, ':', decryptedAccessCode);
-          console.log('Provided access code:', emailCode);
 
           if (decryptedAccessCode === emailCode) {
             console.log('Access code match found for voter:', voter.voterId);
@@ -801,244 +785,6 @@ router.post('/verify-voter', async (req, res) => {
   } catch (error) {
     console.error('Error verifying voter:', error);
     res.status(500).json({ error: 'Failed to verify voter credentials' });
-  }
-});
-
-// Submit ballot and mark vote as cast
-router.post('/submit-vote', async (req, res) => {
-  try {
-    const { ballotToken, memberOfParliament, localCouncil } = req.body;
-
-    console.log('Vote submission attempt:', {
-      ballotToken: ballotToken ? 'PROVIDED' : 'MISSING',
-      memberOfParliament: memberOfParliament ? 'PROVIDED' : 'MISSING',
-      localCouncil: localCouncil ? 'PROVIDED' : 'MISSING'
-    });
-
-    // Validate input
-    if (!ballotToken || !memberOfParliament || !localCouncil) {
-      return res.status(400).json({ 
-        error: 'All voting selections are required: ballot token, Member of Parliament, and Local Council' 
-      });
-    }
-
-    const db = await dbConnection.connect();
-    const votersCollection = dbConnection.getVotersCollection();
-    const voterAuthCollection = dbConnection.getVoterAuthCollection();
-    const castVotesCollection = dbConnection.getCastVotesCollection();
-    const candidatesCollection = dbConnection.getCandidatesCollection();
-
-    // Find the voter by ballot token
-    const authRecord = await voterAuthCollection.findOne({ 
-      ballotToken: ballotToken,
-      ballotTokenExpires: { $gt: new Date() } // Token must not be expired
-    });
-
-    if (!authRecord) {
-      return res.status(401).json({ 
-        error: 'Invalid or expired ballot token. Please verify your credentials again.' 
-      });
-    }
-
-    // Get the voter record
-    const voter = await votersCollection.findOne({ voterId: authRecord.voterId });
-
-    if (!voter) {
-      return res.status(404).json({ 
-        error: 'Voter record not found' 
-      });
-    }
-
-    // Check if vote has already been cast
-    if (voter.voteCast) {
-      return res.status(403).json({ 
-        error: 'Vote has already been cast. Multiple voting is not permitted.' 
-      });
-    }
-
-    // Extract constituency from voter's postcode (first 3 characters)
-    const voterConstituency = voter.postcode.substring(0, 3).toUpperCase();
-    console.log('Voter constituency:', voterConstituency, 'from postcode:', voter.postcode);
-
-    // Validate that the selected candidates are available in this constituency
-    const mpCandidate = await candidatesCollection.findOne({
-      candidateId: memberOfParliament,
-      constituency: voterConstituency,
-      race: 'memberOfParliament'
-    });
-
-    const councilCandidate = await candidatesCollection.findOne({
-      candidateId: localCouncil,
-      constituency: voterConstituency,
-      race: 'localCouncil'
-    });
-
-    if (!mpCandidate) {
-      return res.status(400).json({ 
-        error: `Invalid Member of Parliament selection. Candidate ${memberOfParliament} is not available in your constituency ${voterConstituency}.` 
-      });
-    }
-
-    if (!councilCandidate) {
-      return res.status(400).json({ 
-        error: `Invalid Local Council selection. Candidate ${localCouncil} is not available in your constituency ${voterConstituency}.` 
-      });
-    }
-
-    console.log('Candidate validation successful:', {
-      mpCandidate: mpCandidate.name,
-      councilCandidate: councilCandidate.name,
-      constituency: voterConstituency
-    });
-
-    // Generate unique IDs
-    const ballotId = 'BAL-' + crypto.randomBytes(8).toString('hex').toUpperCase();
-    const mpVoteId = 'VOTE-' + crypto.randomBytes(8).toString('hex').toUpperCase();
-    const councilVoteId = 'VOTE-' + crypto.randomBytes(8).toString('hex').toUpperCase();
-    const voteTimestamp = new Date();
-
-    // Store anonymous vote records in cast_votes collection
-    const voteRecords = [
-      {
-        voteId: mpVoteId,
-        ballotId: ballotId,
-        race: 'memberOfParliament',
-        candidateId: memberOfParliament,
-        constituency: voterConstituency, // Use extracted 3-digit constituency
-        timestamp: voteTimestamp,
-        voteHash: crypto.createHash('sha256').update(mpVoteId + memberOfParliament + voteTimestamp.toISOString()).digest('hex')
-      },
-      {
-        voteId: councilVoteId,
-        ballotId: ballotId,
-        race: 'localCouncil',
-        candidateId: localCouncil,
-        constituency: voterConstituency, // Use extracted 3-digit constituency
-        timestamp: voteTimestamp,
-        voteHash: crypto.createHash('sha256').update(councilVoteId + localCouncil + voteTimestamp.toISOString()).digest('hex')
-      }
-    ];
-
-    // Insert anonymous vote records
-    await castVotesCollection.insertMany(voteRecords);
-    console.log('Anonymous vote records created:', { mpVoteId, councilVoteId, ballotId });
-
-    // Mark vote as cast in voter record (but don't store vote choices here)
-    await votersCollection.updateOne(
-      { _id: voter._id },
-      { 
-        $set: {
-          voteCast: true,
-          ballotId: ballotId,
-          voteTimestamp: voteTimestamp,
-          updatedAt: voteTimestamp
-        }
-      }
-    );
-
-    // Invalidate the ballot token to prevent reuse
-    await voterAuthCollection.updateOne(
-      { _id: authRecord._id },
-      { 
-        $unset: {
-          ballotToken: 1,
-          ballotTokenExpires: 1
-        },
-        $set: {
-          voteSubmittedAt: new Date()
-        }
-      }
-    );
-
-    console.log('Vote successfully submitted for voter:', voter.voterId, 'with ballot ID:', ballotId);
-
-    res.json({ 
-      success: true, 
-      message: 'Your vote has been successfully recorded',
-      ballotId: ballotId,
-      timestamp: new Date(),
-      voter: {
-        voterId: voter.voterId,
-        firstName: voter.firstName,
-        lastName: voter.lastName
-      }
-    });
-
-  } catch (error) {
-    console.error('Error submitting vote:', error);
-    res.status(500).json({ error: 'Failed to submit vote. Please try again.' });
-  }
-});
-
-// Get candidates for a specific constituency based on postcode
-router.get('/candidates/:constituency', async (req, res) => {
-  try {
-    const { constituency } = req.params;
-    
-    console.log('Getting candidates for constituency:', constituency);
-
-    const db = await dbConnection.connect();
-    const candidatesCollection = dbConnection.getCandidatesCollection();
-
-    // Find all candidates for this constituency
-    const candidates = await candidatesCollection.find({ 
-      constituency: constituency.toUpperCase() 
-    }).toArray();
-
-    if (candidates.length === 0) {
-      return res.status(404).json({ 
-        error: `No candidates found for constituency ${constituency}` 
-      });
-    }
-
-    // Group candidates by race (memberOfParliament vs localCouncil)
-    const candidatesByRace = {
-      memberOfParliament: candidates.filter(c => c.race === 'memberOfParliament'),
-      localCouncil: candidates.filter(c => c.race === 'localCouncil')
-    };
-
-    console.log(`Found ${candidates.length} candidates for ${constituency}:`, {
-      memberOfParliament: candidatesByRace.memberOfParliament.length,
-      localCouncil: candidatesByRace.localCouncil.length
-    });
-
-    res.json({ 
-      success: true,
-      constituency: constituency.toUpperCase(),
-      candidates: candidatesByRace
-    });
-
-  } catch (error) {
-    console.error('Error getting candidates:', error);
-    res.status(500).json({ error: 'Failed to get candidates' });
-  }
-});
-
-// Test endpoint to resend voting notification (for testing purposes)
-router.post('/resend-voting-notification', async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
-    console.log('Resending voting notification to:', email);
-
-    try {
-      await sendVotingNotificationEmail(email);
-      res.json({ 
-        success: true, 
-        message: 'Voting notification email resent successfully' 
-      });
-    } catch (emailError) {
-      console.error('Failed to resend voting notification:', emailError);
-      res.status(500).json({ error: 'Failed to resend voting notification email' });
-    }
-
-  } catch (error) {
-    console.error('Error resending voting notification:', error);
-    res.status(500).json({ error: 'Failed to resend voting notification' });
   }
 });
 

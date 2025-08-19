@@ -290,7 +290,79 @@
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
-.proceed-button:hover {
+.proceed-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(40, 167, 69, 0.4);
+}
+
+.proceed-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Email Sent Notice */
+.email-sent-notice {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.email-sent-notice p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.timestamp {
+  font-size: 12px !important;
+  color: #6c757d !important;
+  margin-top: 5px !important;
+}
+
+/* Resend Section */
+.resend-section {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.resend-section .secondary-button {
+  background: #6c757d;
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.resend-section .secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Button States */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }

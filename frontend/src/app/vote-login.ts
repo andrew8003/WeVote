@@ -18,14 +18,8 @@ export class VoteLoginComponent {
   }
 
   onLoginClick() {
-    // For now, navigate to a voter authentication page
-    // This will be expanded to handle actual voter login
-    console.log('Login button clicked');
-    
-    // Placeholder navigation - you can change this to your voter auth route
-    // this.router.navigate(['/voter-auth']);
-    
-    // For now, show an alert (you can remove this later)
-    alert('Voter login functionality will be implemented here. This will redirect to the voter authentication process.');
+    // Navigate to the voter verification page
+    console.log('Navigating to voter verification');
+    this.router.navigate(['/voter-verification']);
   }
 }
