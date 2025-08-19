@@ -27,6 +27,25 @@
                         <p><strong>Time:</strong> {{submissionTime}}</p>
                         <p><strong>Election:</strong> *DEMO* General Election 2025</p>
                         <p><strong>Ballot ID:</strong> {{ballotId}}</p>
+                        <p *ngIf="voteResult?.constituency"><strong>Constituency:</strong> {{voteResult.constituency}}</p>
+                    </div>
+
+                    <div class="vote-choices" *ngIf="voteResult?.candidates">
+                        <h4>📝 Your Vote Choices</h4>
+                        <div class="choice-item">
+                            <p><strong>Member of Parliament:</strong></p>
+                            <p class="candidate-choice">{{voteResult.candidates.memberOfParliament.name}} ({{voteResult.candidates.memberOfParliament.party}})</p>
+                        </div>
+                        <div class="choice-item">
+                            <p><strong>Local Council:</strong></p>
+                            <p class="candidate-choice">{{voteResult.candidates.localCouncil.name}} ({{voteResult.candidates.localCouncil.party}})</p>
+                        </div>
+                    </div>
+
+                    <div class="email-receipt-notice" *ngIf="voteResult?.emailReceiptSent">
+                        <h4>📧 Email Receipt</h4>
+                        <p>✅ A detailed vote receipt has been sent to your registered email address.</p>
+                        <p class="email-note">This receipt contains your vote details and serves as confirmation of your participation. Please check your inbox and spam folder.</p>
                     </div>
                     
                     <div class="security-confirmation">

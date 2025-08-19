@@ -283,4 +283,22 @@ export class UserService {
 
     return await response.json();
   }
+
+  // Send vote receipt email (for when actual email is available)
+  async sendVoteReceipt(receiptData: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/send-vote-receipt`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(receiptData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to send vote receipt');
+    }
+
+    return await response.json();
+  }
 }

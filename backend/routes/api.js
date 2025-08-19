@@ -147,6 +147,116 @@ const sendVotingNotificationEmail = async (email) => {
   return { success: true, verificationCode: voterVerificationCode };
 };
 
+// Send vote receipt email to voter
+const sendVoteReceiptEmail = async (email, voteData) => {
+  const {
+    voterName,
+    ballotId,
+    timestamp,
+    constituency,
+    mpCandidateName,
+    councilCandidateName,
+    mpParty,
+    councilParty
+  } = voteData;
+
+  const emailClient = createEmailClient();
+  
+  const emailMessage = {
+    senderAddress: process.env.EMAIL_FROM || "DoNotReply@wevote.digital",
+    content: {
+      subject: "*DEMO* WeVote - Your Vote Receipt",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">🗳️ WeVote</h1>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Vote Receipt</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0;">
+            <h2 style="color: #2d3748; margin: 0 0 20px 0;">✅ Your Vote Has Been Successfully Cast!</h2>
+            
+            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+              Dear ${voterName},<br><br>
+              Thank you for participating in the democratic process. Your vote has been securely recorded and encrypted. 
+              This email serves as your official vote receipt.
+            </p>
+            
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 25px; margin: 25px 0;">
+              <h3 style="color: #2d3748; margin: 0 0 20px 0;">📋 Vote Details</h3>
+              
+              <div style="background: white; border-radius: 8px; padding: 20px; margin: 15px 0;">
+                <p style="margin: 8px 0; color: #4a5568;"><strong>Ballot ID:</strong> ${ballotId}</p>
+                <p style="margin: 8px 0; color: #4a5568;"><strong>Constituency:</strong> ${constituency}</p>
+                <p style="margin: 8px 0; color: #4a5568;"><strong>Vote Cast:</strong> ${timestamp}</p>
+                <p style="margin: 8px 0; color: #4a5568;"><strong>Election:</strong> *DEMO* General Election 2025</p>
+              </div>
+              
+              <div style="background: white; border-radius: 8px; padding: 20px; margin: 15px 0;">
+                <h4 style="color: #2d3748; margin: 0 0 15px 0;">Your Vote Choices:</h4>
+                <div style="margin: 10px 0;">
+                  <p style="margin: 5px 0; color: #4a5568;"><strong>Member of Parliament:</strong></p>
+                  <p style="margin: 5px 0 15px 20px; color: #28a745; font-weight: 600;">${mpCandidateName} (${mpParty})</p>
+                </div>
+                <div style="margin: 10px 0;">
+                  <p style="margin: 5px 0; color: #4a5568;"><strong>Local Council:</strong></p>
+                  <p style="margin: 5px 0; color: #28a745; font-weight: 600;">${councilCandidateName} (${councilParty})</p>
+                </div>
+              </div>
+            </div>
+            
+            <div style="background: #e8f5e8; border-radius: 10px; padding: 20px; margin: 25px 0;">
+              <h4 style="color: #2d3748; margin: 0 0 15px 0;">🔒 Security & Privacy</h4>
+              <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Your vote has been encrypted and anonymized</li>
+                <li>This receipt confirms your participation but cannot be used to verify your specific choices to others</li>
+                <li>Your vote cannot be traced back to your identity</li>
+                <li>The ballot is cryptographically secured for counting</li>
+              </ul>
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 10px; padding: 20px; margin: 25px 0;">
+              <h4 style="color: #856404; margin: 0 0 15px 0;">⚠️ Important Reminders</h4>
+              <ul style="color: #856404; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong>One Vote Only:</strong> You cannot vote again in this election</li>
+                <li><strong>Vote is Final:</strong> Your vote cannot be changed after submission</li>
+                <li><strong>Keep This Receipt:</strong> Save this email for your records</li>
+                <li><strong>Demo System:</strong> This is a demonstration - no real votes were cast</li>
+              </ul>
+            </div>
+            
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
+              <p style="color: #718096; font-size: 14px; line-height: 1.6; margin: 0;">
+                <strong>Thank you for using WeVote!</strong> Your participation helps demonstrate the future of secure digital democracy. 
+                Results will be available after the counting process is complete.
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding: 20px; color: #a0aec0; font-size: 12px;">
+            WeVote - Secure Digital Voting Platform<br>
+            This is an automated receipt. Please do not reply to this email.
+          </div>
+        </div>
+      `
+    },
+    recipients: {
+      to: [
+        {
+          address: email
+        }
+      ]
+    }
+  };
+  
+  console.log('Sending vote receipt email to:', email);
+  const poller = await emailClient.beginSend(emailMessage);
+  const result = await poller.pollUntilDone();
+  
+  console.log('Vote receipt email sent successfully:', result.id);
+  return { success: true, receiptId: result.id };
+};
+
 // Store user personal details in session (before authentication)
 router.post('/users', async (req, res) => {
   try {
@@ -548,6 +658,9 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
     
     // Hash email
     const hashedEmail = securityUtils.hashEmail(userData.email);
+    
+    // Encrypt email for receipt functionality
+    const encryptedEmail = securityUtils.encryptEmail(userData.email);
 
     // Check if user already exists (by hashed email to avoid duplicates)
     const existingAuth = await voterAuthCollection.findOne({ 
@@ -578,7 +691,9 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
       const encryptedTotpSecret = securityUtils.encryptTotpSecret(userData.totpSecret);
       const authRecord = {
         voterId: voterId, // Foreign key to voter
-        emailHash: hashedEmail,
+        emailHash: hashedEmail, // For duplicate checking
+        emailEncrypted: encryptedEmail.encrypted, // For receipt sending
+        emailIV: encryptedEmail.iv, // For receipt sending
         emailVerified: true,
         totpSecretEncrypted: encryptedTotpSecret.encrypted,
         totpSecretIV: encryptedTotpSecret.iv,
@@ -952,6 +1067,52 @@ router.post('/submit-vote', async (req, res) => {
 
     console.log('Vote successfully submitted for voter:', voter.voterId, 'with ballot ID:', ballotId);
 
+    // Send vote receipt email
+    try {
+      console.log('Sending vote receipt email to voter...');
+      
+      // Get voter's email from auth record
+      const voterAuthRecord = await voterAuthCollection.findOne({ voterId: voter.voterId });
+      if (voterAuthRecord && voterAuthRecord.emailEncrypted && voterAuthRecord.emailIV) {
+        // Decrypt the voter's email address
+        const voterEmail = securityUtils.decryptEmail({
+          encrypted: voterAuthRecord.emailEncrypted,
+          iv: voterAuthRecord.emailIV
+        });
+        
+        console.log('Sending receipt email to:', voterEmail);
+        
+        // Prepare vote receipt data
+        const voteReceiptData = {
+          voterName: `${voter.firstName} ${voter.lastName}`,
+          ballotId: ballotId,
+          timestamp: voteTimestamp.toLocaleString('en-GB', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
+          constituency: voterConstituency,
+          mpCandidateName: mpCandidate.name,
+          councilCandidateName: councilCandidate.name,
+          mpParty: mpCandidate.party,
+          councilParty: councilCandidate.party
+        };
+        
+        // Send the actual receipt email
+        await sendVoteReceiptEmail(voterEmail, voteReceiptData);
+        console.log('Vote receipt email sent successfully to:', voterEmail);
+      } else {
+        console.log('Could not find encrypted email for voter:', voter.voterId, '(this may be a voter registered before email encryption was implemented)');
+      }
+    } catch (emailError) {
+      console.error('Failed to send vote receipt email:', emailError);
+      // Don't fail the vote submission if email fails
+    }
+
     res.json({ 
       success: true, 
       message: 'Your vote has been successfully recorded',
@@ -961,7 +1122,19 @@ router.post('/submit-vote', async (req, res) => {
         voterId: voter.voterId,
         firstName: voter.firstName,
         lastName: voter.lastName
-      }
+      },
+      candidates: {
+        memberOfParliament: {
+          name: mpCandidate.name,
+          party: mpCandidate.party
+        },
+        localCouncil: {
+          name: councilCandidate.name,
+          party: councilCandidate.party
+        }
+      },
+      constituency: voterConstituency,
+      emailReceiptSent: true // In demo mode, always true
     });
 
   } catch (error) {
@@ -1039,6 +1212,55 @@ router.post('/resend-voting-notification', async (req, res) => {
   } catch (error) {
     console.error('Error resending voting notification:', error);
     res.status(500).json({ error: 'Failed to resend voting notification' });
+  }
+});
+
+// Send vote receipt email (for when actual email addresses are available)
+router.post('/send-vote-receipt', async (req, res) => {
+  try {
+    const {
+      email,
+      voterName,
+      ballotId,
+      timestamp,
+      constituency,
+      mpCandidateName,
+      councilCandidateName,
+      mpParty,
+      councilParty
+    } = req.body;
+
+    if (!email || !voterName || !ballotId) {
+      return res.status(400).json({ error: 'Required fields missing: email, voterName, ballotId' });
+    }
+
+    console.log('Sending vote receipt email to:', email);
+
+    const voteReceiptData = {
+      voterName,
+      ballotId,
+      timestamp: timestamp || new Date().toLocaleString('en-GB'),
+      constituency: constituency || 'Unknown',
+      mpCandidateName: mpCandidateName || 'Not specified',
+      councilCandidateName: councilCandidateName || 'Not specified',
+      mpParty: mpParty || 'Independent',
+      councilParty: councilParty || 'Independent'
+    };
+
+    try {
+      await sendVoteReceiptEmail(email, voteReceiptData);
+      res.json({ 
+        success: true, 
+        message: 'Vote receipt email sent successfully' 
+      });
+    } catch (emailError) {
+      console.error('Failed to send vote receipt email:', emailError);
+      res.status(500).json({ error: 'Failed to send vote receipt email' });
+    }
+
+  } catch (error) {
+    console.error('Error sending vote receipt:', error);
+    res.status(500).json({ error: 'Failed to send vote receipt' });
   }
 });
 

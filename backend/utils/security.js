@@ -91,6 +91,27 @@ class SecurityUtils {
   hashNationalInsurance(niNumber) {
     return crypto.createHash('sha256').update(niNumber.toUpperCase()).digest('hex');
   }
+
+  // Encrypt email address for receipt functionality
+  encryptEmail(email) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let encrypted = cipher.update(email.toLowerCase(), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return {
+      encrypted: encrypted,
+      iv: iv.toString('hex')
+    };
+  }
+
+  // Decrypt email address
+  decryptEmail(encryptedData) {
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const decipher = crypto.createDecipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
+    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
 }
 
 module.exports = new SecurityUtils();

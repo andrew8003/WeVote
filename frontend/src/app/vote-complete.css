@@ -299,6 +299,71 @@ body {
     line-height: 1.6;
 }
 
+/* Vote Choices Styles */
+.vote-choices {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.vote-choices h4 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.choice-item {
+    margin: 15px 0;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.choice-item:last-child {
+    border-bottom: none;
+}
+
+.choice-item p {
+    margin: 5px 0;
+}
+
+.candidate-choice {
+    color: #48bb78 !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    margin-left: 20px !important;
+}
+
+/* Email Receipt Notice */
+.email-receipt-notice {
+    background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+    border: 1px solid #81e6d9;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.email-receipt-notice h4 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.email-receipt-notice p {
+    color: #2d3748;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.email-note {
+    font-size: 0.95rem !important;
+    color: #4a5568 !important;
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
