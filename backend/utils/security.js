@@ -112,6 +112,21 @@ class SecurityUtils {
     decrypted += decipher.final('utf8');
     return decrypted;
   }
+
+  // Normalize personal data for consistent storage and comparison
+  normalizePersonalData(firstName, lastName, postcode, nationalInsurance) {
+    return {
+      firstName: firstName ? firstName.toLowerCase().replace(/\s+/g, '') : '',
+      lastName: lastName ? lastName.toLowerCase().replace(/\s+/g, '') : '',
+      postcode: postcode ? postcode.toLowerCase().replace(/\s+/g, '') : '',
+      nationalInsurance: nationalInsurance ? nationalInsurance.toLowerCase().replace(/\s+/g, '') : ''
+    };
+  }
+
+  // Normalize a single field for comparison
+  normalizeField(value) {
+    return value ? value.toLowerCase().replace(/\s+/g, '') : '';
+  }
 }
 
 module.exports = new SecurityUtils();

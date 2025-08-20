@@ -68,6 +68,11 @@ class DatabaseConnection {
     return this.getDb().collection('cast_votes');
   }
 
+  // Get admin collection
+  getAdminCollection() {
+    return this.getDb().collection('admin');
+  }
+
   // Get authenticator collection (legacy - for backwards compatibility)
   getUsersCollection() {
     return this.getDb().collection('authenticator');

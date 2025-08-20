@@ -272,16 +272,19 @@ router.post('/users', async (req, res) => {
       });
     }
 
+    // Normalize personal data for consistent storage
+    const normalizedData = securityUtils.normalizePersonalData(firstName, lastName, postcode, nationalInsurance);
+
     // Generate a temporary session ID
     const sessionId = crypto.randomUUID();
     
     // Store personal details in memory (temporary)
     const userData = {
       sessionId,
-      firstName,
-      lastName,
-      postcode: postcode.toUpperCase(),
-      nationalInsurance: nationalInsurance.toUpperCase(),
+      firstName: normalizedData.firstName,
+      lastName: normalizedData.lastName,
+      postcode: normalizedData.postcode,
+      nationalInsurance: normalizedData.nationalInsurance,
       email: null,
       emailVerified: false,
       totpSecret: null,
@@ -679,7 +682,7 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
         voterId: voterId,
         firstName: userData.firstName,
         lastName: userData.lastName,
-        postcode: userData.postcode.toUpperCase(),
+        postcode: userData.postcode,
         nationalInsuranceEncrypted: encryptedNI.encrypted,
         nationalInsuranceIV: encryptedNI.iv,
         voteCast: false, // Default: no vote cast yet
@@ -770,6 +773,9 @@ router.post('/verify-voter', async (req, res) => {
       });
     }
 
+    // Normalize the National Insurance number for comparison
+    const normalizedNI = securityUtils.normalizeField(nationalInsurance);
+
     const db = await dbConnection.connect();
     const votersCollection = dbConnection.getVotersCollection();
     const voterAuthCollection = dbConnection.getVoterAuthCollection();
@@ -799,10 +805,14 @@ router.post('/verify-voter', async (req, res) => {
           iv: voter.nationalInsuranceIV
         });
 
-        console.log('Decrypted NI for voter', voter.voterId, ':', decryptedNI);
-        console.log('Provided NI (cleaned):', nationalInsurance.replace(/\s+/g, '').toUpperCase());
+        // Normalize the decrypted NI for comparison
+        const normalizedDecryptedNI = securityUtils.normalizeField(decryptedNI);
 
-        if (decryptedNI.toUpperCase() === nationalInsurance.replace(/\s+/g, '').toUpperCase()) {
+        console.log('Decrypted NI for voter', voter.voterId, ':', decryptedNI);
+        console.log('Normalized provided NI:', normalizedNI);
+        console.log('Normalized stored NI:', normalizedDecryptedNI);
+
+        if (normalizedDecryptedNI === normalizedNI) {
           console.log('National Insurance match found for voter:', voter.voterId);
           
           // Get the corresponding auth record
@@ -1044,7 +1054,6 @@ router.post('/submit-vote', async (req, res) => {
       { 
         $set: {
           voteCast: true,
-          ballotId: ballotId,
           voteTimestamp: voteTimestamp,
           updatedAt: voteTimestamp
         }

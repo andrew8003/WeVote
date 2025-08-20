@@ -33,6 +33,28 @@
   letter-spacing: 1px;
 }
 
+.admin-link {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
+.admin-access {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 8px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.admin-access:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 /* Introduction Section */
 .intro-section {
   margin-bottom: 50px;

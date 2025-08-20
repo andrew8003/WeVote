@@ -1,0 +1,176 @@
+<div class="container">
+    <!-- Header Section -->
+    <div class="header">
+        <div class="logo">
+            <h1>WeVote Admin</h1>
+            <div class="tagline">Election Management Dashboard</div>
+        </div>
+    </div>
+
+    <!-- Login Section (shown when not authenticated) -->
+    <div id="loginSection" class="login-section">
+        <div class="login-card">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            
+            <!-- Setup Button for Initial Admin Creation -->
+            <div class="setup-section">
+                <hr style="margin: 20px 0; border: 1px solid #e2e8f0;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    First time setup? Create admin user in database:
+                </p>
+                <button type="button" id="setupBtn" class="setup-btn">Setup Admin User</button>
+                <div id="setupMessage" class="setup-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section (shown when authenticated) -->
+    <div id="dashboardSection" class="dashboard-section" style="display: none;">
+        
+        <!-- Overview Statistics -->
+        <div class="stats-overview">
+            <h2>Election Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRegistered">0</div>
+                    <div class="stat-label">Total Registered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotesCast">0</div>
+                    <div class="stat-label">Individual Votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotersTurnout">0</div>
+                    <div class="stat-label">Voters Participated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="turnoutPercentage">0%</div>
+                    <div class="stat-label">Turnout %</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalConstituencies">0</div>
+                    <div class="stat-label">Constituencies</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="refreshBtn" class="btn btn-primary">
+                <span>🔄</span> Refresh Data
+            </button>
+            <button id="loadVotersBtn" class="btn btn-secondary">
+                <span>👥</span> Load Voter Details
+            </button>
+            <button id="logoutBtn" class="btn btn-outline">
+                <span>🚪</span> Logout
+            </button>
+        </div>
+
+        <!-- Constituency Statistics Table -->
+        <div class="table-section">
+            <h3>Constituency Breakdown</h3>
+            <div class="table-container">
+                <table id="constituencyTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Constituency</th>
+                            <th>Registered</th>
+                            <th>Voted</th>
+                            <th>Turnout %</th>
+                            <th>MP Votes</th>
+                            <th>Council Votes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Candidates Vote Summary -->
+        <div class="table-section">
+            <h3>Candidate Vote Summary</h3>
+            <div class="table-container">
+                <table id="candidatesTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Candidate ID</th>
+                            <th>Type</th>
+                            <th>Total Votes</th>
+                            <th>Constituencies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Voter Details Section -->
+        <div class="table-section">
+            <h3>Voter Details</h3>
+            
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="voteStatusFilter">Filter by Vote Status:</label>
+                    <select id="voteStatusFilter">
+                        <option value="all">All Voters</option>
+                        <option value="voted">Voted</option>
+                        <option value="not-voted">Not Voted</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="constituencyFilter">Filter by Constituency:</label>
+                    <select id="constituencyFilter">
+                        <option value="all">All Constituencies</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="votersTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Voter ID</th>
+                            <th>Name</th>
+                            <th>Constituency</th>
+                            <th>Registration Date</th>
+                            <th>Vote Status</th>
+                            <th>Vote Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Last Updated Info -->
+        <div class="last-updated">
+            <p>Last updated: <span id="lastUpdated">Never</span></p>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+    </div>
+</div>
