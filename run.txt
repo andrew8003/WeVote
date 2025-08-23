@@ -11,3 +11,7 @@ npm start
 
 
 run in separate command prompt windows 
+
+localhost:4200
+localhost:4200/vote-login
+localhost:4200/admin

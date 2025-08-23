@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import * as QRCode from 'qrcode';
 import { UserService } from './services/user.service';
 
@@ -39,9 +40,15 @@ export class AuthComponent implements OnInit, OnDestroy {
   resendCountdown = 0;
   private resendTimer: any;
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(
+    private userService: UserService, 
+    private router: Router,
+    private titleService: Title
+  ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('WeVote - Authentication Setup');
+    
     // Check if user has saved personal details
     if (!this.userService.hasCurrentSession()) {
       alert('Please complete your personal details first.');

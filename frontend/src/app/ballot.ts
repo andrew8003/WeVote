@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { UserService } from './services/user.service';
 
@@ -23,7 +24,8 @@ export class BallotComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private titleService: Title
   ) {
     this.ballotForm = this.formBuilder.group({
       mpChoice: ['', Validators.required],
@@ -32,6 +34,8 @@ export class BallotComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.titleService.setTitle('WeVote - Cast Your Vote');
+    
     // Check if voter has valid ballot access
     this.ballotToken = sessionStorage.getItem('ballotToken');
     const voterInfoStr = sessionStorage.getItem('voterInfo');

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -14,9 +15,14 @@ export class VoteCompleteComponent implements OnInit {
   ballotId: string = '';
   voteResult: any = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private titleService: Title) {}
 
   ngOnInit() {
+    this.titleService.setTitle('WeVote - Vote Confirmed');
+    
+    // Auto-scroll to top of page
+    window.scrollTo(0, 0);
+    
     // Get the vote result from session storage
     const voteResultStr = sessionStorage.getItem('voteResult');
     

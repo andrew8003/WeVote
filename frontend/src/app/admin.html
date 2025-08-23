@@ -44,24 +44,16 @@
             <h2>Election Overview</h2>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number" id="totalRegistered">0</div>
-                    <div class="stat-label">Total Registered</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalVotesCast">0</div>
-                    <div class="stat-label">Individual Votes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalVotersTurnout">0</div>
-                    <div class="stat-label">Voters Participated</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-number" id="turnoutPercentage">0%</div>
                     <div class="stat-label">Turnout %</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalConstituencies">0</div>
-                    <div class="stat-label">Constituencies</div>
+                    <div class="stat-number" id="totalRegistered">0</div>
+                    <div class="stat-label">Voters Registered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotersTurnout">0</div>
+                    <div class="stat-label">Voters Participated</div>
                 </div>
             </div>
         </div>
@@ -69,29 +61,90 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
             <button id="refreshBtn" class="btn btn-primary">
-                <span>🔄</span> Refresh Data
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">Refresh Data</span>
             </button>
-            <button id="loadVotersBtn" class="btn btn-secondary">
-                <span>👥</span> Load Voter Details
-            </button>
-            <button id="logoutBtn" class="btn btn-outline">
-                <span>🚪</span> Logout
+            <button id="logoutBtn" class="btn btn-secondary">
+                <span class="btn-icon">�</span>
+                <span class="btn-text">Logout</span>
             </button>
         </div>
 
         <!-- Constituency Statistics Table -->
-        <div class="table-section">
-            <h3>Constituency Breakdown</h3>
-            <div class="table-container">
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3>Constituency Breakdown</h3>
+            </div>
+            <div class="table-card-content">
                 <table id="constituencyTable" class="data-table">
                     <thead>
                         <tr>
-                            <th>Constituency</th>
-                            <th>Registered</th>
-                            <th>Voted</th>
-                            <th>Turnout %</th>
-                            <th>MP Votes</th>
-                            <th>Council Votes</th>
+                            <th class="sortable" data-sort="constituency">
+                                Constituency <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="registered">
+                                Registered <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="voted">
+                                Voted <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="turnout">
+                                Turnout % <span class="sort-arrow">↕</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Member of Parliament Votes by Party -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3>Member of Parliament Votes by Party</h3>
+            </div>
+            <div class="table-card-content">
+                <table id="mpPartyTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="party">
+                                Party <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="totalVotes">
+                                Total Votes <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="percentage">
+                                Percentage <span class="sort-arrow">↕</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Local Council Votes by Party -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3>Local Council Votes by Party</h3>
+            </div>
+            <div class="table-card-content">
+                <table id="councilPartyTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="party">
+                                Party <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="totalVotes">
+                                Total Votes <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="percentage">
+                                Percentage <span class="sort-arrow">↕</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,57 +155,30 @@
         </div>
 
         <!-- Candidates Vote Summary -->
-        <div class="table-section">
-            <h3>Candidate Vote Summary</h3>
-            <div class="table-container">
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3>Candidate Vote Summary</h3>
+            </div>
+            <div class="table-card-content">
                 <table id="candidatesTable" class="data-table">
                     <thead>
                         <tr>
-                            <th>Candidate ID</th>
-                            <th>Type</th>
-                            <th>Total Votes</th>
+                            <th class="sortable" data-sort="candidateName">
+                                Candidate Name <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="party">
+                                Party <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="candidateId">
+                                Candidate ID <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="voteType">
+                                Type <span class="sort-arrow">↕</span>
+                            </th>
+                            <th class="sortable" data-sort="totalVotes">
+                                Total Votes <span class="sort-arrow">↕</span>
+                            </th>
                             <th>Constituencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Data populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Voter Details Section -->
-        <div class="table-section">
-            <h3>Voter Details</h3>
-            
-            <!-- Filter Controls -->
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label for="voteStatusFilter">Filter by Vote Status:</label>
-                    <select id="voteStatusFilter">
-                        <option value="all">All Voters</option>
-                        <option value="voted">Voted</option>
-                        <option value="not-voted">Not Voted</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="constituencyFilter">Filter by Constituency:</label>
-                    <select id="constituencyFilter">
-                        <option value="all">All Constituencies</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table id="votersTable" class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Voter ID</th>
-                            <th>Name</th>
-                            <th>Constituency</th>
-                            <th>Registration Date</th>
-                            <th>Vote Status</th>
-                            <th>Vote Time</th>
                         </tr>
                     </thead>
                     <tbody>

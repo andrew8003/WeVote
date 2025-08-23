@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { UserService } from './services/user.service';
 
@@ -11,14 +12,15 @@ import { UserService } from './services/user.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule]
 })
-export class VoterVerificationComponent {
+export class VoterVerificationComponent implements OnInit {
   verificationForm: FormGroup;
   isVerifying = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private titleService: Title
   ) {
     this.verificationForm = this.formBuilder.group({
       emailCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
@@ -28,6 +30,7 @@ export class VoterVerificationComponent {
   }
 
   ngOnInit() {
+    this.titleService.setTitle('WeVote - Voter Verification');
     console.log('Voter verification page loaded');
   }
 

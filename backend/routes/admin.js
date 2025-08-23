@@ -103,54 +103,97 @@ router.post('/stats', adminAuth, async (req, res) => {
     const db = await dbConnection.connect();
     const votersCollection = dbConnection.getVotersCollection();
     const castVotesCollection = dbConnection.getCastVotesCollection();
+    const candidatesCollection = db.collection('candidates');
+
+    // Get all candidates for name lookup
+    const allCandidates = await candidatesCollection.find({}).toArray();
+    const candidateMap = {};
+    allCandidates.forEach(candidate => {
+      candidateMap[candidate.candidateId] = {
+        name: candidate.name, // Use 'name' field from your data structure
+        party: candidate.party
+      };
+    });
+
+    console.log('Candidate map created:', Object.keys(candidateMap).length, 'candidates loaded');
 
     // Get all registered voters
     const allVoters = await votersCollection.find({}).toArray();
     const totalRegistered = allVoters.length;
     
-    // Get all cast votes to count actual votes
+    // Get voters who have actually cast votes (using voteCast field)
+    const votersWhoVoted = await votersCollection.find({ voteCast: true }).toArray();
+    const totalVotersTurnout = votersWhoVoted.length;
+
+    // Get all cast votes to count individual votes
     const allCastVotes = await castVotesCollection.find({}).toArray();
     const totalVotesCast = allCastVotes.length;
 
-    // Get voters who have cast votes (for voter tracking)
-    const votersWhoCast = await votersCollection.find({ voteCast: true }).toArray();
-
-    // Group votes by constituency (area)
+    // Group votes by constituency (area) and by party
     const votesByConstituency = {};
     const candidateVotes = {};
+    const mpVotesByParty = {};
+    const councilVotesByParty = {};
+    let totalMpVotes = 0;
+    let totalCouncilVotes = 0;
 
     allCastVotes.forEach(vote => {
-      const constituency = vote.constituency;
+      // Use constituency directly from the vote record
+      let constituency = vote.constituency;
+      
+      // If constituency not in vote record, try to find it from voter
+      if (!constituency && vote.voterId) {
+        const voter = allVoters.find(v => v._id && v._id.toString() === vote.voterId);
+        if (voter && voter.postcode) {
+          constituency = voter.postcode.substring(0, 3);
+        }
+      }
+      
+      // Default to 'Unknown' if we can't determine constituency
+      if (!constituency) {
+        constituency = 'Unknown';
+      }
+
       const candidateId = vote.candidateId;
-      const voteType = vote.voteType;
+      const voteType = vote.voteType || vote.race; // Handle different field names
+      const candidateInfo = candidateMap[candidateId];
+      const party = candidateInfo ? candidateInfo.party : 'Unknown Party';
+
+      console.log(`Processing vote: constituency=${constituency}, candidateId=${candidateId}, voteType=${voteType}, race=${vote.race}, party=${party}`);
 
       // Initialize constituency if not exists
       if (!votesByConstituency[constituency]) {
         votesByConstituency[constituency] = {
-          constituency: constituency,
-          totalVotes: 0,
-          mpVotes: {},
-          councilVotes: {}
+          constituency: constituency
         };
       }
 
-      // Count votes by type and candidate
-      if (voteType === 'MP') {
-        if (!votesByConstituency[constituency].mpVotes[candidateId]) {
-          votesByConstituency[constituency].mpVotes[candidateId] = 0;
+      // Count votes by party for MP and Council races
+      if (voteType === 'memberOfParliament') {
+        if (!mpVotesByParty[party]) {
+          mpVotesByParty[party] = 0;
         }
-        votesByConstituency[constituency].mpVotes[candidateId]++;
-      } else if (voteType === 'LOCAL_COUNCIL') {
-        if (!votesByConstituency[constituency].councilVotes[candidateId]) {
-          votesByConstituency[constituency].councilVotes[candidateId] = 0;
+        mpVotesByParty[party]++;
+        totalMpVotes++;
+        console.log(`MP vote counted for party ${party}`);
+      } else if (voteType === 'localCouncil') {
+        if (!councilVotesByParty[party]) {
+          councilVotesByParty[party] = 0;
         }
-        votesByConstituency[constituency].councilVotes[candidateId]++;
+        councilVotesByParty[party]++;
+        totalCouncilVotes++;
+        console.log(`Council vote counted for party ${party}`);
+      } else {
+        console.log(`Unknown vote type: ${voteType} for vote ${vote._id}`);
       }
 
       // Overall candidate vote tracking
       if (!candidateVotes[candidateId]) {
+        const candidateInfo = candidateMap[candidateId];
         candidateVotes[candidateId] = {
           candidateId: candidateId,
+          candidateName: candidateInfo ? candidateInfo.name : 'Unknown Candidate',
+          party: candidateInfo ? candidateInfo.party : 'Unknown Party',
           voteType: voteType,
           totalVotes: 0,
           constituencies: {}
@@ -164,20 +207,29 @@ router.post('/stats', adminAuth, async (req, res) => {
       candidateVotes[candidateId].constituencies[constituency]++;
     });
 
-    // Calculate total votes per constituency
-    Object.keys(votesByConstituency).forEach(constituency => {
-      const mpVoteCount = Object.values(votesByConstituency[constituency].mpVotes).reduce((sum, count) => sum + count, 0);
-      const councilVoteCount = Object.values(votesByConstituency[constituency].councilVotes).reduce((sum, count) => sum + count, 0);
-      votesByConstituency[constituency].totalVotes = mpVoteCount + councilVoteCount;
-      votesByConstituency[constituency].mpVoteCount = mpVoteCount;
-      votesByConstituency[constituency].councilVoteCount = councilVoteCount;
-    });
+    // Create party vote summaries with percentages
+    const mpPartyVotes = Object.keys(mpVotesByParty).map(party => ({
+      party: party,
+      totalVotes: mpVotesByParty[party],
+      percentage: totalMpVotes > 0 ? Math.round((mpVotesByParty[party] / totalMpVotes) * 100) : 0
+    })).sort((a, b) => b.totalVotes - a.totalVotes);
 
-    // Get voter registration by constituency and actual votes cast
+    const councilPartyVotes = Object.keys(councilVotesByParty).map(party => ({
+      party: party,
+      totalVotes: councilVotesByParty[party],
+      percentage: totalCouncilVotes > 0 ? Math.round((councilVotesByParty[party] / totalCouncilVotes) * 100) : 0
+    })).sort((a, b) => b.totalVotes - a.totalVotes);
+
+    // Debug output
+    console.log('MP votes by party:', mpVotesByParty);
+    console.log('Council votes by party:', councilVotesByParty);
+    console.log('Total MP votes:', totalMpVotes);
+    console.log('Total Council votes:', totalCouncilVotes);
+
+    // Get voter registration by constituency using voteCast field
     const votersByConstituency = {};
-    const votersWhoVotedByConstituency = new Set();
-
-    // Count registered voters by constituency
+    
+    // Count registered voters and voters who voted by constituency
     allVoters.forEach(voter => {
       // Extract constituency from postcode (first 3 digits)
       const postcode = voter.postcode || '';
@@ -193,29 +245,9 @@ router.post('/stats', adminAuth, async (req, res) => {
       }
       
       votersByConstituency[constituency].totalRegistered++;
-    });
-
-    // Count unique voters who actually cast votes by constituency
-    allCastVotes.forEach(vote => {
-      const constituency = vote.constituency;
-      const voterId = vote.voterId;
       
-      // Create unique key for voter in constituency
-      const voterConstituencyKey = `${voterId}-${constituency}`;
-      
-      if (!votersWhoVotedByConstituency.has(voterConstituencyKey)) {
-        votersWhoVotedByConstituency.add(voterConstituencyKey);
-        
-        // Initialize constituency if needed
-        if (!votersByConstituency[constituency]) {
-          votersByConstituency[constituency] = {
-            constituency: constituency,
-            totalRegistered: 0,
-            totalVoted: 0,
-            turnoutPercentage: 0
-          };
-        }
-        
+      // Count if this voter has cast their vote
+      if (voter.voteCast === true) {
         votersByConstituency[constituency].totalVoted++;
       }
     });
@@ -228,17 +260,13 @@ router.post('/stats', adminAuth, async (req, res) => {
         : 0;
     });
 
-    // Count unique voters who cast at least one vote
-    const uniqueVotersWhoCast = new Set(allCastVotes.map(vote => vote.voterId));
-    const totalVotersTurnout = uniqueVotersWhoCast.size;
-
     // Overall statistics
     const overallStats = {
       totalRegisteredVoters: totalRegistered,
       totalVotesCast: totalVotesCast, // Total individual votes (MP + Council)
-      totalVotersTurnout: totalVotersTurnout, // Unique voters who cast at least one vote
+      totalVotersTurnout: totalVotersTurnout, // Voters who have cast at least one vote
       overallTurnoutPercentage: totalRegistered > 0 ? Math.round((totalVotersTurnout / totalRegistered) * 100) : 0,
-      totalConstituencies: Object.keys(votesByConstituency).length
+      totalConstituencies: Object.keys(votersByConstituency).length
     };
 
     res.json({
@@ -247,6 +275,8 @@ router.post('/stats', adminAuth, async (req, res) => {
       votesByConstituency: Object.values(votesByConstituency),
       votersByConstituency: Object.values(votersByConstituency),
       candidateVotes: Object.values(candidateVotes),
+      mpPartyVotes: mpPartyVotes,
+      councilPartyVotes: councilPartyVotes,
       lastUpdated: new Date().toISOString()
     });
 

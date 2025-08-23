@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-admin',
@@ -11,13 +12,21 @@ export class AdminComponent implements OnInit, AfterViewInit {
   private votersData: any[] = [];
   private statsData: any = null;
   private baseURL = 'http://localhost:3000/admin';
+  private constituencyData: any[] = [];
+  private candidatesData: any[] = [];
+  private mpPartyData: any[] = [];
+  private councilPartyData: any[] = [];
+  private currentSort = { column: '', direction: 'asc', table: '' };
 
-  constructor() {}
+  constructor(private titleService: Title) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.titleService.setTitle('WeVote - Admin Dashboard');
+  }
 
   ngAfterViewInit() {
     this.initializeEventListeners();
+    this.initializeSortingListeners();
   }
 
   private initializeEventListeners() {
@@ -76,6 +85,230 @@ export class AdminComponent implements OnInit, AfterViewInit {
         this.filterVoters();
       });
     }
+  }
+
+  private initializeSortingListeners() {
+    // Remove existing listeners first
+    const allHeaders = document.querySelectorAll('th.sortable');
+    allHeaders.forEach(header => {
+      header.replaceWith(header.cloneNode(true));
+    });
+
+    // Add click listeners to sortable headers for constituency table
+    const constituencyHeaders = document.querySelectorAll('#constituencyTable th.sortable');
+    constituencyHeaders.forEach(header => {
+      header.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const clickedElement = e.currentTarget as HTMLElement;
+        const column = clickedElement.getAttribute('data-sort');
+        if (column) {
+          console.log('Sorting constituency table by:', column);
+          this.sortTable('constituency', column);
+        }
+      });
+    });
+
+    // Add click listeners to sortable headers for candidates table
+    const candidatesHeaders = document.querySelectorAll('#candidatesTable th.sortable');
+    candidatesHeaders.forEach(header => {
+      header.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const clickedElement = e.currentTarget as HTMLElement;
+        const column = clickedElement.getAttribute('data-sort');
+        if (column) {
+          console.log('Sorting candidates table by:', column);
+          this.sortTable('candidates', column);
+        }
+      });
+    });
+
+    // Add click listeners to sortable headers for MP party table
+    const mpPartyHeaders = document.querySelectorAll('#mpPartyTable th.sortable');
+    mpPartyHeaders.forEach(header => {
+      header.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const clickedElement = e.currentTarget as HTMLElement;
+        const column = clickedElement.getAttribute('data-sort');
+        if (column) {
+          console.log('Sorting MP party table by:', column);
+          this.sortTable('mpParty', column);
+        }
+      });
+    });
+
+    // Add click listeners to sortable headers for council party table
+    const councilPartyHeaders = document.querySelectorAll('#councilPartyTable th.sortable');
+    councilPartyHeaders.forEach(header => {
+      header.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const clickedElement = e.currentTarget as HTMLElement;
+        const column = clickedElement.getAttribute('data-sort');
+        if (column) {
+          console.log('Sorting council party table by:', column);
+          this.sortTable('councilParty', column);
+        }
+      });
+    });
+  }
+
+  private sortTable(tableName: string, column: string) {
+    // Determine sort direction
+    let direction = 'asc';
+    if (this.currentSort.table === tableName && this.currentSort.column === column) {
+      direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    console.log(`Sorting ${tableName} table by ${column} in ${direction} direction`);
+    this.currentSort = { table: tableName, column, direction };
+
+    // Update header styling
+    this.updateSortHeaders(tableName, column, direction);
+
+    // Sort and re-render the appropriate table
+    if (tableName === 'constituency') {
+      this.sortAndRenderConstituencyTable(column, direction);
+    } else if (tableName === 'candidates') {
+      this.sortAndRenderCandidatesTable(column, direction);
+    } else if (tableName === 'mpParty') {
+      this.sortAndRenderMpPartyTable(column, direction);
+    } else if (tableName === 'councilParty') {
+      this.sortAndRenderCouncilPartyTable(column, direction);
+    }
+  }
+
+  private updateSortHeaders(tableName: string, activeColumn: string, direction: string) {
+    let tableId = '';
+    switch (tableName) {
+      case 'constituency': tableId = '#constituencyTable'; break;
+      case 'candidates': tableId = '#candidatesTable'; break;
+      case 'mpParty': tableId = '#mpPartyTable'; break;
+      case 'councilParty': tableId = '#councilPartyTable'; break;
+    }
+    
+    const headers = document.querySelectorAll(`${tableId} th.sortable`);
+    
+    headers.forEach(header => {
+      const column = header.getAttribute('data-sort');
+      header.classList.remove('sorted-asc', 'sorted-desc');
+      
+      if (column === activeColumn) {
+        header.classList.add(`sorted-${direction}`);
+      }
+    });
+  }
+
+  private sortAndRenderConstituencyTable(column: string, direction: string) {
+    if (!this.constituencyData.length) return;
+
+    const sortedData = [...this.constituencyData].sort((a, b) => {
+      let aVal = a[column];
+      let bVal = b[column];
+
+      // Handle different data types
+      if (column === 'constituency') {
+        aVal = aVal.toLowerCase();
+        bVal = bVal.toLowerCase();
+      } else if (column === 'turnout') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else {
+        aVal = parseInt(aVal) || 0;
+        bVal = parseInt(bVal) || 0;
+      }
+
+      if (direction === 'asc') {
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      } else {
+        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+      }
+    });
+
+    this.renderConstituencyTable(sortedData);
+  }
+
+  private sortAndRenderCandidatesTable(column: string, direction: string) {
+    if (!this.candidatesData.length) return;
+
+    const sortedData = [...this.candidatesData].sort((a, b) => {
+      let aVal = a[column];
+      let bVal = b[column];
+
+      // Handle different data types
+      if (column === 'candidateName' || column === 'party' || column === 'voteType') {
+        aVal = (aVal || '').toLowerCase();
+        bVal = (bVal || '').toLowerCase();
+      } else if (column === 'totalVotes') {
+        aVal = parseInt(aVal) || 0;
+        bVal = parseInt(bVal) || 0;
+      } else {
+        aVal = (aVal || '').toLowerCase();
+        bVal = (bVal || '').toLowerCase();
+      }
+
+      if (direction === 'asc') {
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      } else {
+        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+      }
+    });
+
+    this.renderCandidatesTable(sortedData);
+  }
+
+  private sortAndRenderMpPartyTable(column: string, direction: string) {
+    if (!this.mpPartyData.length) return;
+
+    const sortedData = [...this.mpPartyData].sort((a, b) => {
+      let aVal = a[column];
+      let bVal = b[column];
+
+      // Handle different data types
+      if (column === 'party') {
+        aVal = (aVal || '').toLowerCase();
+        bVal = (bVal || '').toLowerCase();
+      } else {
+        aVal = parseInt(aVal) || 0;
+        bVal = parseInt(bVal) || 0;
+      }
+
+      if (direction === 'asc') {
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      } else {
+        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+      }
+    });
+
+    this.renderMpPartyTable(sortedData);
+  }
+
+  private sortAndRenderCouncilPartyTable(column: string, direction: string) {
+    if (!this.councilPartyData.length) return;
+
+    const sortedData = [...this.councilPartyData].sort((a, b) => {
+      let aVal = a[column];
+      let bVal = b[column];
+
+      // Handle different data types
+      if (column === 'party') {
+        aVal = (aVal || '').toLowerCase();
+        bVal = (bVal || '').toLowerCase();
+      } else {
+        aVal = parseInt(aVal) || 0;
+        bVal = parseInt(bVal) || 0;
+      }
+
+      if (direction === 'asc') {
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      } else {
+        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+      }
+    });
+
+    this.renderCouncilPartyTable(sortedData);
   }
 
   private async handleLogin() {
@@ -219,8 +452,15 @@ export class AdminComponent implements OnInit, AfterViewInit {
         this.updateOverviewStats(data.overallStats);
         this.updateConstituencyTable(data.votesByConstituency, data.votersByConstituency);
         this.updateCandidatesTable(data.candidateVotes);
+        this.updateMpPartyTable(data.mpPartyVotes || []);
+        this.updateCouncilPartyTable(data.councilPartyVotes || []);
         this.updateConstituencyFilter(data.votersByConstituency);
         this.updateLastUpdated(data.lastUpdated);
+        
+        // Reinitialize sorting listeners after DOM update
+        setTimeout(() => {
+          this.initializeSortingListeners();
+        }, 100);
       } else {
         console.error('Error loading stats:', data.error);
       }
@@ -233,24 +473,15 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
   private updateOverviewStats(stats: any) {
     const totalRegistered = document.getElementById('totalRegistered');
-    const totalVotesCast = document.getElementById('totalVotesCast');
     const totalVotersTurnout = document.getElementById('totalVotersTurnout');
     const turnoutPercentage = document.getElementById('turnoutPercentage');
-    const totalConstituencies = document.getElementById('totalConstituencies');
 
-    if (totalRegistered) totalRegistered.textContent = stats.totalRegisteredVoters.toLocaleString();
-    if (totalVotesCast) totalVotesCast.textContent = stats.totalVotesCast.toLocaleString();
-    if (totalVotersTurnout) totalVotersTurnout.textContent = stats.totalVotersTurnout.toLocaleString();
     if (turnoutPercentage) turnoutPercentage.textContent = `${stats.overallTurnoutPercentage}%`;
-    if (totalConstituencies) totalConstituencies.textContent = stats.totalConstituencies.toLocaleString();
+    if (totalRegistered) totalRegistered.textContent = stats.totalRegisteredVoters.toLocaleString();
+    if (totalVotersTurnout) totalVotersTurnout.textContent = stats.totalVotersTurnout.toLocaleString();
   }
 
   private updateConstituencyTable(votesData: any[], votersData: any[]) {
-    const tbody = document.querySelector('#constituencyTable tbody') as HTMLTableSectionElement;
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
     // Combine votes and voters data by constituency
     const combinedData: any = {};
     
@@ -271,41 +502,124 @@ export class AdminComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Sort by constituency
-    const sortedData = Object.values(combinedData).sort((a: any, b: any) => 
-      a.constituency.localeCompare(b.constituency)
-    );
+    // Store data for sorting
+    this.constituencyData = Object.values(combinedData).map((item: any) => ({
+      constituency: item.constituency,
+      registered: item.totalRegistered,
+      voted: item.totalVoted,
+      turnout: parseFloat(item.turnoutPercentage)
+    }));
 
-    sortedData.forEach((item: any) => {
+    // Clear any previous sort state and render with default sort
+    this.currentSort = { column: '', direction: 'asc', table: '' };
+    this.sortAndRenderConstituencyTable('constituency', 'asc');
+  }
+
+  private renderConstituencyTable(data: any[]) {
+    const tbody = document.querySelector('#constituencyTable tbody') as HTMLTableSectionElement;
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    data.forEach((item: any) => {
       const row = tbody.insertRow();
       row.innerHTML = `
         <td><strong>${item.constituency}</strong></td>
-        <td>${item.totalRegistered.toLocaleString()}</td>
-        <td>${item.totalVoted.toLocaleString()}</td>
-        <td><strong>${item.turnoutPercentage}%</strong></td>
-        <td>${item.mpVotes.toLocaleString()}</td>
-        <td>${item.councilVotes.toLocaleString()}</td>
+        <td>${item.registered.toLocaleString()}</td>
+        <td>${item.voted.toLocaleString()}</td>
+        <td><strong>${item.turnout}%</strong></td>
+      `;
+    });
+  }
+
+  private updateMpPartyTable(partyData: any[]) {
+    // Store data for sorting
+    this.mpPartyData = partyData.map(party => ({
+      party: party.party,
+      totalVotes: party.totalVotes,
+      percentage: party.percentage
+    }));
+
+    // Initial sort by total votes (descending)
+    this.sortAndRenderMpPartyTable('totalVotes', 'desc');
+  }
+
+  private renderMpPartyTable(data: any[]) {
+    const tbody = document.querySelector('#mpPartyTable tbody') as HTMLTableSectionElement;
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    data.forEach((item: any) => {
+      const row = tbody.insertRow();
+      row.innerHTML = `
+        <td><strong>${item.party}</strong></td>
+        <td>${item.totalVotes.toLocaleString()}</td>
+        <td><strong>${item.percentage}%</strong></td>
+      `;
+    });
+  }
+
+  private updateCouncilPartyTable(partyData: any[]) {
+    // Store data for sorting
+    this.councilPartyData = partyData.map(party => ({
+      party: party.party,
+      totalVotes: party.totalVotes,
+      percentage: party.percentage
+    }));
+
+    // Initial sort by total votes (descending)
+    this.sortAndRenderCouncilPartyTable('totalVotes', 'desc');
+  }
+
+  private renderCouncilPartyTable(data: any[]) {
+    const tbody = document.querySelector('#councilPartyTable tbody') as HTMLTableSectionElement;
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    data.forEach((item: any) => {
+      const row = tbody.insertRow();
+      row.innerHTML = `
+        <td><strong>${item.party}</strong></td>
+        <td>${item.totalVotes.toLocaleString()}</td>
+        <td><strong>${item.percentage}%</strong></td>
       `;
     });
   }
 
   private updateCandidatesTable(candidatesData: any[]) {
+    // Store data for sorting
+    this.candidatesData = candidatesData.map(candidate => ({
+      candidateName: candidate.candidateName || 'Unknown Candidate',
+      party: candidate.party || 'Unknown Party',
+      candidateId: candidate.candidateId,
+      voteType: candidate.voteType,
+      totalVotes: candidate.totalVotes,
+      constituencies: candidate.constituencies
+    }));
+
+    // Clear any previous sort state and render with default sort
+    this.currentSort = { column: '', direction: 'asc', table: '' };
+    this.sortAndRenderCandidatesTable('totalVotes', 'desc');
+  }
+
+  private renderCandidatesTable(data: any[]) {
     const tbody = document.querySelector('#candidatesTable tbody') as HTMLTableSectionElement;
     if (!tbody) return;
 
     tbody.innerHTML = '';
 
-    // Sort by total votes descending
-    const sortedCandidates = candidatesData.sort((a, b) => b.totalVotes - a.totalVotes);
-
-    sortedCandidates.forEach(candidate => {
+    data.forEach(candidate => {
       const constituenciesList = Object.keys(candidate.constituencies)
         .map(constituency => `${constituency}: ${candidate.constituencies[constituency]}`)
         .join(', ');
 
       const row = tbody.insertRow();
       row.innerHTML = `
-        <td><strong>${candidate.candidateId}</strong></td>
+        <td><strong>${candidate.candidateName}</strong></td>
+        <td>${candidate.party}</td>
+        <td><code>${candidate.candidateId}</code></td>
         <td><span class="badge badge-${candidate.voteType.toLowerCase()}">${candidate.voteType}</span></td>
         <td><strong>${candidate.totalVotes.toLocaleString()}</strong></td>
         <td class="constituencies-cell">${constituenciesList || 'None'}</td>

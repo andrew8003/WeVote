@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { UserService } from './services/user.service';
 
 @Component({
@@ -10,10 +11,15 @@ import { UserService } from './services/user.service';
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   personalForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private userService: UserService, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private userService: UserService, 
+    private router: Router,
+    private titleService: Title
+  ) {
     this.personalForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
@@ -23,6 +29,10 @@ export class HomeComponent {
         this.nationalInsuranceValidator
       ]]
     });
+  }
+
+  ngOnInit() {
+    this.titleService.setTitle('WeVote - Voter Registration');
   }
 
   // Custom validator for National Insurance number
