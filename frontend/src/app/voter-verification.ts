@@ -15,6 +15,7 @@ import { UserService } from './services/user.service';
 export class VoterVerificationComponent implements OnInit {
   verificationForm: FormGroup;
   isVerifying = false;
+  verificationError = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -53,6 +54,7 @@ export class VoterVerificationComponent implements OnInit {
   onSubmitVerification() {
     if (this.verificationForm.valid) {
       this.isVerifying = true;
+      this.verificationError = ''; // Clear previous errors
       
       const formData = this.verificationForm.value;
       console.log('Verification form submitted:', {
@@ -84,7 +86,7 @@ export class VoterVerificationComponent implements OnInit {
           
           // Show error message to user
           const errorMessage = error.error?.error || 'Verification failed. Please check your credentials and try again.';
-          alert(errorMessage);
+          this.verificationError = errorMessage;
         }
       });
       

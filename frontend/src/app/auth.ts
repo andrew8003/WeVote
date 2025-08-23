@@ -40,6 +40,12 @@ export class AuthComponent implements OnInit, OnDestroy {
   resendCountdown = 0;
   private resendTimer: any;
 
+  // Error messages
+  generalError = '';
+  emailError = '';
+  authError = '';
+  verificationError = '';
+
   constructor(
     private userService: UserService, 
     private router: Router,
@@ -51,10 +57,20 @@ export class AuthComponent implements OnInit, OnDestroy {
     
     // Check if user has saved personal details
     if (!this.userService.hasCurrentSession()) {
-      alert('Please complete your personal details first.');
-      this.router.navigate(['/']);
+      this.generalError = 'Please complete your personal details first.';
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 3000);
       return;
     }
+  }
+
+  clearEmailError() {
+    this.emailError = '';
+  }
+
+  clearAuthError() {
+    this.authError = '';
   }
 
   ngOnDestroy() {
@@ -66,9 +82,12 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   async sendEmailVerification() {
     if (!this.userEmail || !this.isValidEmail(this.userEmail)) {
-      alert('Please enter a valid email address.');
+      this.emailError = 'Please enter a valid email address.';
       return;
     }
+
+    // Clear previous errors
+    this.emailError = '';
 
     if (this.isSendingEmail) {
       return; // Prevent multiple clicks
@@ -93,7 +112,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     } catch (error: any) {
       console.error('Error sending email verification:', error);
-      alert(`Error: ${error.message || 'Failed to send verification email'}`);
+      this.emailError = error.message || 'Failed to send verification email';
     } finally {
       this.isSendingEmail = false;
     }
@@ -128,7 +147,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       
     } catch (error: any) {
       console.error('Error resending email verification:', error);
-      alert(`Error: ${error.message || 'Failed to resend verification email'}`);
+      this.emailError = error.message || 'Failed to resend verification email';
     } finally {
       this.isSendingEmail = false;
     }
@@ -142,7 +161,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   async verifyEmailCode() {
     if (!this.emailVerificationCode || this.emailVerificationCode.length !== 6) {
-      alert('Please enter a 6-digit verification code.');
+      this.emailError = 'Please enter a 6-digit verification code.';
       return;
     }
 
@@ -150,6 +169,8 @@ export class AuthComponent implements OnInit, OnDestroy {
       return; // Prevent multiple clicks
     }
 
+    // Clear previous errors
+    this.emailError = '';
     this.isVerifyingEmail = true;
 
     try {
@@ -165,7 +186,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       
     } catch (error) {
       console.error('Error verifying email:', error);
-      alert(error instanceof Error ? error.message : 'Invalid verification code. Please check your email and try again.');
+      this.emailError = error instanceof Error ? error.message : 'Invalid verification code. Please check your email and try again.';
     } finally {
       this.isVerifyingEmail = false;
     }
@@ -227,7 +248,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       console.log('TOTP secret stored in backend:', result);
     } catch (error) {
       console.error('Error storing secret:', error);
-      alert('Failed to store authenticator setup. Please try again.');
+      this.authError = 'Failed to store authenticator setup. Please try again.';
     }
   }
 
@@ -265,7 +286,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   private async verifyCodeWithBackend(code: string) {
     if (!code || code.length !== 6) {
-      alert('Please enter a 6-digit code from your authenticator app.');
+      this.authError = 'Please enter a 6-digit code from your authenticator app.';
       return;
     }
 
@@ -273,6 +294,8 @@ export class AuthComponent implements OnInit, OnDestroy {
       return; // Prevent multiple clicks
     }
 
+    // Clear previous errors
+    this.authError = '';
     this.isVerifyingAuth = true;
 
     try {
@@ -283,7 +306,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       
     } catch (error) {
       console.error('Error verifying TOTP:', error);
-      alert(error instanceof Error ? error.message : 'Invalid code. Please try again with the current code from your authenticator app.');
+      this.authError = error instanceof Error ? error.message : 'Invalid code. Please try again with the current code from your authenticator app.';
     } finally {
       this.isVerifyingAuth = false;
     }
@@ -291,7 +314,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   async finishRegistration() {
     if (!this.emailVerificationSuccess || !this.verificationSuccess) {
-      alert('Please complete both email and authenticator app verification first.');
+      this.generalError = 'Please complete both email and authenticator app verification first.';
       return;
     }
 
@@ -302,6 +325,9 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.isFinishingRegistration = true;
 
     try {
+      // Clear previous errors
+      this.generalError = '';
+      
       console.log('Completing registration and saving to database...');
       
       // Complete registration in backend (save to MongoDB)
@@ -313,7 +339,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       this.router.navigate(['/registration-complete']);
     } catch (error) {
       console.error('Error completing registration:', error);
-      alert(error instanceof Error ? error.message : 'Failed to complete registration. Please try again.');
+      this.generalError = error instanceof Error ? error.message : 'Failed to complete registration. Please try again.';
     } finally {
       this.isFinishingRegistration = false;
     }

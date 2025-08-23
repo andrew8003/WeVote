@@ -9,6 +9,14 @@
     <button class="back-button" (click)="goBack()">← Back to Personal Details</button>
   </header>
 
+  <!-- General Error Message -->
+  <div class="general-error-message" *ngIf="generalError">
+    <div class="error-content">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text">{{generalError}}</span>
+    </div>
+  </div>
+
   <div class="auth-content">
     <!-- Email Verification Card -->
     <div class="auth-card" [class.completed]="emailVerificationSuccess">
@@ -28,7 +36,16 @@
             [(ngModel)]="userEmail" 
             placeholder="Enter your email address"
             [disabled]="emailSent || isSendingEmail"
+            (input)="clearEmailError()"
           >
+        </div>
+
+        <!-- Email Error Message -->
+        <div class="error-message-container" *ngIf="emailError">
+          <div class="error-content">
+            <span class="error-icon">⚠️</span>
+            <span class="error-text">{{emailError}}</span>
+          </div>
         </div>
         
         <button 
@@ -181,7 +198,16 @@
               [(ngModel)]="verificationCode" 
               placeholder="000000"
               maxlength="6"
+              (input)="clearAuthError()"
             >
+          </div>
+
+          <!-- Auth Error Message -->
+          <div class="error-message-container" *ngIf="authError">
+            <div class="error-content">
+              <span class="error-icon">⚠️</span>
+              <span class="error-text">{{authError}}</span>
+            </div>
           </div>
           
           <button 

@@ -222,88 +222,30 @@
 }
 
 /* Section Styling */
-.constituency-section,
-.candidates-section,
-.voters-section {
+/* Table Card Styling */
+.table-card {
     background: white;
     border-radius: 15px;
-    padding: 30px;
     margin-bottom: 30px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-}
-
-.constituency-section h2,
-.candidates-section h2,
-.voters-section h2 {
-    color: #2c3e50;
-    margin-bottom: 25px;
-    font-size: 1.6rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 10px;
-}
-
-/* Table Styling */
-.table-container {
-    overflow-x: auto;
-    margin-top: 20px;
-}
-
-.results-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.results-table th {
+.table-card-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 15px 12px;
-    text-align: left;
+    padding: 20px 25px;
+    margin: 0;
+}
+
+.table-card-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
     font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.results-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 0.9rem;
-}
-
-.results-table tbody tr:hover {
-    background: #f7fafc;
-}
-
-.results-table tbody tr:nth-child(even) {
-    background: #f9f9f9;
-}
-
-/* Controls */
-.controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.filter-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.filter-controls select {
-    padding: 8px 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    background: white;
+.table-card-content {
+    padding: 0;
 }
 
 /* Action Buttons */
@@ -445,17 +387,6 @@
     font-size: 1.1rem;
 }
 
-/* Status Indicators */
-.status-voted {
-    color: #38a169;
-    font-weight: 600;
-}
-
-.status-not-voted {
-    color: #e53e3e;
-    font-weight: 600;
-}
-
 /* Table Card Styles */
 .table-card {
     background: white;
@@ -482,39 +413,6 @@
 .table-card-content {
     padding: 0;
     overflow-x: auto;
-}
-
-.table-card .filter-controls {
-    margin-top: 15px;
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.table-card .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.table-card .filter-group label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.table-card .filter-group select {
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 0.9rem;
-}
-
-.table-card .filter-group select option {
-    background: #333;
-    color: white;
 }
 
 .data-table {

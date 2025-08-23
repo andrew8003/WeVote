@@ -84,6 +84,33 @@ body {
     padding: 40px;
 }
 
+/* Error Message Styles */
+.error-message-container {
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 40px;
+    color: #c53030;
+}
+
+.error-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.error-text {
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
 .ballot-header {
     text-align: center;
     margin-bottom: 40px;

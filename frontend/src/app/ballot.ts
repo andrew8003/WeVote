@@ -20,6 +20,7 @@ export class BallotComponent implements OnInit {
   candidates: any = null;
   isLoadingCandidates = true;
   constituency: string = '';
+  ballotError = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -42,8 +43,10 @@ export class BallotComponent implements OnInit {
     
     if (!this.ballotToken || !voterInfoStr) {
       // No valid ballot access, redirect to verification
-      alert('Invalid ballot access. Please complete voter verification first.');
-      this.router.navigate(['/voter-verification']);
+      this.ballotError = 'Invalid ballot access. Please complete voter verification first.';
+      setTimeout(() => {
+        this.router.navigate(['/voter-verification']);
+      }, 3000);
       return;
     }
 
@@ -60,8 +63,10 @@ export class BallotComponent implements OnInit {
       
     } catch (error) {
       console.error('Error setting up ballot:', error);
-      alert('Error loading ballot. Please try again.');
-      this.router.navigate(['/voter-verification']);
+      this.ballotError = 'Error loading ballot. Please try again.';
+      setTimeout(() => {
+        this.router.navigate(['/voter-verification']);
+      }, 3000);
     }
   }
 
@@ -73,8 +78,10 @@ export class BallotComponent implements OnInit {
       console.log('Loaded candidates for', this.constituency, ':', this.candidates);
     } catch (error: any) {
       console.error('Error loading candidates:', error);
-      alert(`Error loading candidates: ${error.message}. Please try again.`);
-      this.router.navigate(['/voter-verification']);
+      this.ballotError = `Error loading candidates: ${error.message}. Please try again.`;
+      setTimeout(() => {
+        this.router.navigate(['/voter-verification']);
+      }, 3000);
     } finally {
       this.isLoadingCandidates = false;
     }
@@ -101,6 +108,7 @@ export class BallotComponent implements OnInit {
   async onSubmitBallot() {
     if (this.ballotForm.valid && this.ballotToken) {
       this.isSubmitting = true;
+      this.ballotError = ''; // Clear previous errors
       
       const mpChoice = this.ballotForm.get('mpChoice')?.value;
       const councilChoice = this.ballotForm.get('councilChoice')?.value;
@@ -134,7 +142,7 @@ export class BallotComponent implements OnInit {
       } catch (error: any) {
         console.error('Error submitting vote:', error);
         this.isSubmitting = false;
-        alert(`Error submitting vote: ${error.message || 'Please try again.'}`);
+        this.ballotError = `Error submitting vote: ${error.message || 'Please try again.'}`;
       }
       
     } else {
@@ -143,7 +151,7 @@ export class BallotComponent implements OnInit {
         this.ballotForm.get(key)?.markAsTouched();
       });
       
-      alert('Please make selections for all races before submitting your ballot.');
+      this.ballotError = 'Please make selections for all races before submitting your ballot.';
     }
   }
 

@@ -9,7 +9,6 @@ import { Title } from '@angular/platform-browser';
 })
 export class AdminComponent implements OnInit, AfterViewInit {
   private isAuthenticated = false;
-  private votersData: any[] = [];
   private statsData: any = null;
   private baseURL = 'http://localhost:3000/admin';
   private constituencyData: any[] = [];
@@ -60,29 +59,6 @@ export class AdminComponent implements OnInit, AfterViewInit {
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
         this.logout();
-      });
-    }
-
-    // Load voters button
-    const loadVotersBtn = document.getElementById('loadVotersBtn');
-    if (loadVotersBtn) {
-      loadVotersBtn.addEventListener('click', () => {
-        this.loadVoterDetails();
-      });
-    }
-
-    // Filter controls
-    const voteStatusFilter = document.getElementById('voteStatusFilter');
-    if (voteStatusFilter) {
-      voteStatusFilter.addEventListener('change', () => {
-        this.filterVoters();
-      });
-    }
-
-    const constituencyFilter = document.getElementById('constituencyFilter');
-    if (constituencyFilter) {
-      constituencyFilter.addEventListener('change', () => {
-        this.filterVoters();
       });
     }
   }
@@ -454,7 +430,6 @@ export class AdminComponent implements OnInit, AfterViewInit {
         this.updateCandidatesTable(data.candidateVotes);
         this.updateMpPartyTable(data.mpPartyVotes || []);
         this.updateCouncilPartyTable(data.councilPartyVotes || []);
-        this.updateConstituencyFilter(data.votersByConstituency);
         this.updateLastUpdated(data.lastUpdated);
         
         // Reinitialize sorting listeners after DOM update
@@ -625,111 +600,6 @@ export class AdminComponent implements OnInit, AfterViewInit {
         <td class="constituencies-cell">${constituenciesList || 'None'}</td>
       `;
     });
-  }
-
-  private updateConstituencyFilter(votersData: any[]) {
-    const filter = document.getElementById('constituencyFilter') as HTMLSelectElement;
-    if (!filter) return;
-
-    const constituencies = [...new Set(votersData.map(v => v.constituency))].sort();
-    
-    // Clear existing options except "All"
-    filter.innerHTML = '<option value="all">All Constituencies</option>';
-    
-    constituencies.forEach(constituency => {
-      const option = document.createElement('option');
-      option.value = constituency;
-      option.textContent = constituency;
-      filter.appendChild(option);
-    });
-  }
-
-  private async loadVoterDetails() {
-    if (!this.isAuthenticated) return;
-
-    this.showLoading(true);
-
-    try {
-      const response = await fetch(`${this.baseURL}/voters`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: 'admin', password: 'admin' })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        this.votersData = data.voters;
-        this.updateVotersTable(this.votersData);
-      } else {
-        console.error('Error loading voters:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching voter details:', error);
-    } finally {
-      this.showLoading(false);
-    }
-  }
-
-  private updateVotersTable(voters: any[]) {
-    const tbody = document.querySelector('#votersTable tbody') as HTMLTableSectionElement;
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    // Sort by registration date (newest first)
-    const sortedVoters = voters.sort((a, b) => 
-      new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-    );
-
-    sortedVoters.forEach(voter => {
-      const registrationDate = new Date(voter.registrationDate).toLocaleDateString();
-      const voteTime = voter.voteTimestamp 
-        ? new Date(voter.voteTimestamp).toLocaleString() 
-        : '-';
-      
-      const voteStatus = voter.voteCast ? 'Voted' : 'Not Voted';
-      const statusClass = voter.voteCast ? 'status-voted' : 'status-not-voted';
-
-      const row = tbody.insertRow();
-      row.innerHTML = `
-        <td><code>${voter.voterId}</code></td>
-        <td><strong>${voter.name}</strong></td>
-        <td>${voter.constituency}</td>
-        <td>${registrationDate}</td>
-        <td><span class="${statusClass}">${voteStatus}</span></td>
-        <td>${voteTime}</td>
-      `;
-    });
-  }
-
-  private filterVoters() {
-    const statusFilter = document.getElementById('voteStatusFilter') as HTMLSelectElement;
-    const constituencyFilter = document.getElementById('constituencyFilter') as HTMLSelectElement;
-
-    if (!statusFilter || !constituencyFilter || this.votersData.length === 0) return;
-
-    let filteredVoters = this.votersData;
-
-    // Filter by vote status
-    if (statusFilter.value !== 'all') {
-      filteredVoters = filteredVoters.filter(voter => {
-        if (statusFilter.value === 'voted') return voter.voteCast;
-        if (statusFilter.value === 'not-voted') return !voter.voteCast;
-        return true;
-      });
-    }
-
-    // Filter by constituency
-    if (constituencyFilter.value !== 'all') {
-      filteredVoters = filteredVoters.filter(voter => 
-        voter.constituency === constituencyFilter.value
-      );
-    }
-
-    this.updateVotersTable(filteredVoters);
   }
 
   private updateLastUpdated(timestamp: string) {

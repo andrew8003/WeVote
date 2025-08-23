@@ -13,6 +13,7 @@ import { UserService } from './services/user.service';
 })
 export class HomeComponent implements OnInit {
   personalForm: FormGroup;
+  generalError: string = '';
 
   constructor(
     private fb: FormBuilder, 
@@ -33,6 +34,13 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.setTitle('WeVote - Voter Registration');
+    
+    // Clear errors when user starts typing
+    this.personalForm.valueChanges.subscribe(() => {
+      if (this.generalError) {
+        this.generalError = '';
+      }
+    });
   }
 
   // Custom validator for National Insurance number
@@ -66,6 +74,9 @@ export class HomeComponent implements OnInit {
   async onSubmitPersonalDetails() {
     if (this.personalForm.valid) {
       try {
+        // Clear any previous errors
+        this.generalError = '';
+        
         console.log('Personal details submitted:', this.personalForm.value);
         
         // Clean the National Insurance number before sending
@@ -83,7 +94,7 @@ export class HomeComponent implements OnInit {
         
       } catch (error) {
         console.error('Error saving personal details:', error);
-        alert('Failed to save personal details. Please try again.');
+        this.generalError = 'Failed to save personal details. Please try again.';
       }
     } else {
       // Mark all fields as touched to show validation errors

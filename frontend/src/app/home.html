@@ -81,6 +81,14 @@
         </div>
       </div>
 
+      <!-- General Error Message -->
+      <div class="general-error-message" *ngIf="generalError">
+        <div class="error-content">
+          <span class="error-icon">⚠️</span>
+          <span class="error-text">{{generalError}}</span>
+        </div>
+      </div>
+
       <button 
         type="submit" 
         class="primary-button" 

@@ -20,6 +20,14 @@
             </div>
         </div>
 
+        <!-- Ballot Error Message -->
+        <div class="error-message-container" *ngIf="ballotError">
+            <div class="error-content">
+                <span class="error-icon">⚠️</span>
+                <span class="error-text">{{ballotError}}</span>
+            </div>
+        </div>
+
         <div class="content">
             <div class="ballot-section">
                 <div class="ballot-header">
