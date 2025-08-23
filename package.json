@@ -1,8 +1,27 @@
 {
+  "name": "wevote-app",
+  "version": "1.0.0",
+  "description": "WeVote - Secure Digital Voting Platform",
+  "main": "backend/bin/www",
+  "scripts": {
+    "start": "node backend/bin/www",
+    "build": "cd frontend && npm run build",
+    "install-deps": "cd backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\"",
+    "postinstall": "cd backend && npm install && cd ../frontend && npm install && npm run build"
+  },
+  "keywords": ["voting", "nodejs", "angular", "mongodb"],
+  "author": "WeVote Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "@azure/communication-email": "^1.0.0",
     "bcrypt": "^6.0.0",
     "crypto-js": "^4.2.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "concurrently": "^8.2.2"
   }
 }

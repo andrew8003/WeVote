@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 export class AdminComponent implements OnInit, AfterViewInit {
   private isAuthenticated = false;
   private statsData: any = null;
-  private baseURL = 'http://localhost:3000/admin';
+  private baseURL = this.getBaseURL();
   private constituencyData: any[] = [];
   private candidatesData: any[] = [];
   private mpPartyData: any[] = [];
@@ -18,6 +18,16 @@ export class AdminComponent implements OnInit, AfterViewInit {
   private currentSort = { column: '', direction: 'asc', table: '' };
 
   constructor(private titleService: Title) {}
+
+  private getBaseURL(): string {
+    // In production, API calls will be relative (same origin)
+    // In development, use localhost
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:3000/admin';
+    } else {
+      return '/admin'; // Relative URL for production
+    }
+  }
 
   ngOnInit() {
     this.titleService.setTitle('WeVote - Admin Dashboard');

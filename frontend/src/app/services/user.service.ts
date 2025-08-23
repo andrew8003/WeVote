@@ -28,7 +28,17 @@ export interface VoterVerificationResponse {
   providedIn: 'root'
 })
 export class UserService {
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = this.getBaseUrl();
+  
+  private getBaseUrl(): string {
+    // In production, API calls will be relative (same origin)
+    // In development, use localhost
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:3000/api';
+    } else {
+      return '/api'; // Relative URL for production
+    }
+  }
   private currentSessionId: string | null = null;
 
   constructor() {}
