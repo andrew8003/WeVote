@@ -37,26 +37,77 @@ WEBSITE_URL=https://your-app-name.evennode.com
 
 **Important:** Change your-app-name to your actual Evennode app name.
 
-### Step 3: Prepare Project for Git Deployment
+### Step 3: Deploy from GitHub (Recommended)
 
-1. **Initialize Git Repository** (if not already done)
+Since your project is already on GitHub, you can deploy directly from there:
+
+#### Option A: GitHub Integration (Recommended)
+
+1. **Connect GitHub to Evennode**
+   - In your Evennode dashboard, go to your app settings
+   - Look for "Git Repository" or "Deployment" section
+   - Click "Connect to GitHub"
+   - Authorize Evennode to access your GitHub account
+
+2. **Select Your Repository**
+   - Choose your WeVote repository from the list
+   - Select the `main` branch for deployment
+   - Evennode will automatically detect it's a Node.js project
+
+3. **Configure Auto-Deploy**
+   - Enable automatic deployments when you push to main branch
+   - This means every time you update your code, it will automatically redeploy
+
+#### Option B: Manual GitHub Deploy
+
+If GitHub integration isn't available, you can still deploy using GitHub:
+
+1. **Clone from GitHub to Local**
    ```bash
-   cd c:\Users\Computer\Desktop\WeVoteProject
-   git init
-   git add .
-   git commit -m "Initial WeVote deployment"
+   git clone https://github.com/andrew8003/WeVote.git wevote-deploy
+   cd wevote-deploy
    ```
 
 2. **Add Evennode Remote**
    ```bash
    git remote add evennode https://git.evennode.com/your-app-name.git
    ```
-   Replace `your-app-name` with your actual Evennode app name.
 
 3. **Push to Evennode**
    ```bash
    git push evennode main
    ```
+
+#### Option C: Download and Upload
+
+If you prefer not to use Git:
+
+1. **Download from GitHub**
+   - Go to your GitHub repository
+   - Click "Code" → "Download ZIP"
+   - Extract the files
+
+2. **Upload to Evennode**
+   - Use Evennode's file manager to upload your project
+   - Or use FTP/SFTP if provided by Evennode
+
+### Important Notes for Private GitHub Repositories
+
+**Privacy & Access:**
+- Your repository being private is perfect for security
+- Evennode will need permission to access your private repo
+- When connecting GitHub, make sure to grant access to private repositories
+- You can revoke access anytime from your GitHub settings
+
+**Free GitHub Account Limitations:**
+- Private repositories work fine with free accounts
+- GitHub Actions (CI/CD) has usage limits on free accounts
+- For basic deployment, this won't be an issue
+
+**Security Best Practices:**
+- Keep your repository private to protect sensitive configuration
+- Never commit real environment variables to GitHub
+- Use GitHub Secrets if you set up GitHub Actions later
 
 ### Step 4: Domain and SSL Setup
 
