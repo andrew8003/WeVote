@@ -87,9 +87,60 @@ If you prefer not to use Git:
    - Click "Code" → "Download ZIP"
    - Extract the files
 
-2. **Upload to Evennode**
-   - Use Evennode's file manager to upload your project
-   - Or use FTP/SFTP if provided by Evennode
+2. **Upload and Extract on Evennode**
+   
+   **Method A: Using Evennode File Manager**
+   - Go to your Evennode dashboard → Your app → File Manager
+   - Upload the `wevote-deployment.zip` file to the root directory
+   - Right-click on the ZIP file and select "Extract" or "Unzip"
+   - Delete the ZIP file after extraction to save space
+   
+   **Method B: Using FTP + Terminal**
+   - Upload the ZIP file via FTP to your app root directory
+   - In Evennode dashboard, go to "Terminal" or "SSH Access"
+   - Run: `unzip wevote-deployment.zip`
+   - Run: `rm wevote-deployment.zip` (to delete the ZIP file)
+   
+   **Method C: Manual File Upload**
+   - Extract the ZIP file on your computer first
+   - Upload all the individual files and folders via FTP or File Manager
+   - This takes longer but works if extraction options aren't available
+
+### Quick ZIP Deployment Steps
+
+For the easiest deployment using the ZIP file we created:
+
+1. **Upload ZIP to Evennode**
+   - Go to your Evennode dashboard → `wevote-sol-4` app
+   - Click on "File Manager" or "Files"
+   - Upload `wevote-deployment.zip` to the root directory
+
+2. **Extract the ZIP file**
+   - **Option 1:** Right-click the ZIP file → "Extract" or "Unzip"
+   - **Option 2:** Use Terminal in Evennode dashboard:
+     ```bash
+     unzip wevote-deployment.zip
+     rm wevote-deployment.zip
+     ```
+
+3. **Set Environment Variables** (in app settings):
+   ```
+   NODE_ENV=production
+   PORT=8080
+   MONGODB_URI=mongodb+srv://wevoteusr:b8AxTcr1N3QURK67@wevote.oex8ioo.mongodb.net/?retryWrites=true&w=majority&appName=WeVote
+   DB_NAME=Wevote
+   AZURE_COMMUNICATION_CONNECTION_STRING=endpoint=https://wevoteemailservice.uk.communication.azure.com/;accesskey=5t4P0wvm15sRDliK64r5XzIWVVOstCrqHTfKJc8xf74tK1msAgslJQQJ99BHACULyCpi6wnzAAAAAZCSPsnI
+   EMAIL_FROM=DoNotReply@wevote.digital
+   JWT_SECRET=your-jwt-secret-key-here-change-this-in-production
+   ENCRYPTION_KEY=WeVote2025SecureEncryptionKey123!
+   WEBSITE_URL=https://wevote-sol-4.evennode.com
+   ```
+
+4. **Restart the App**
+   - Click "RESTART APP" in your Evennode dashboard
+
+5. **Test Your Site**
+   - Visit: https://wevote-sol-4.evennode.com
 
 ### Important Notes for Private GitHub Repositories
 
