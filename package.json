@@ -8,9 +8,15 @@
     "build": "cd frontend && npm run build",
     "install-deps": "cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\"",
+    "dev-network": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run serve-network\"",
     "postinstall": "cd backend && npm install && cd ../frontend && npm install && npm run build"
   },
-  "keywords": ["voting", "nodejs", "angular", "mongodb"],
+  "keywords": [
+    "voting",
+    "nodejs",
+    "angular",
+    "mongodb"
+  ],
   "author": "WeVote Team",
   "license": "MIT",
   "engines": {
@@ -21,7 +27,9 @@
     "@azure/communication-email": "^1.0.0",
     "bcrypt": "^6.0.0",
     "crypto-js": "^4.2.0",
-    "uuid": "^11.1.0",
-    "concurrently": "^8.2.2"
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
   }
 }
