@@ -26,8 +26,11 @@ WeVote is a secure and accessible e-voting platform designed to provide a transp
 
 ##  Tech Stack  
 
-- **Frontend:** React  
-- **Backend:** Django  
+- **MEAN**
+  -MongoDB
+  -Expressjs
+  -Angular
+  -Nodejs  
 - **Database:** MongoDB  
 - **Authentication:** Azure Email, MFA (Auth App)  
 
