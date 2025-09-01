@@ -54,7 +54,7 @@ export class BallotComponent implements OnInit {
       this.voterInfo = JSON.parse(voterInfoStr);
       console.log('Ballot access granted for voter:', this.voterInfo);
       
-      // Extract constituency from voter's postcode (first 3 characters)
+      // Extract constituency from voter's postcode first 3 characters
       this.constituency = this.voterInfo.postcode.substring(0, 3).toUpperCase();
       console.log('Voter constituency:', this.constituency);
       

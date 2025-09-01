@@ -10,7 +10,6 @@ class DatabaseConnection {
   async connect() {
     try {
       if (!this.client) {
-        // Replace placeholders with actual credentials
         const uri = process.env.MONGODB_URI;
         if (!uri) {
           throw new Error('MONGODB_URI not found in environment variables');
@@ -72,19 +71,8 @@ class DatabaseConnection {
   getAdminCollection() {
     return this.getDb().collection('admin');
   }
-
-  // Get authenticator collection (legacy - for backwards compatibility)
-  getUsersCollection() {
-    return this.getDb().collection('authenticator');
-  }
-
-  // Get email verification codes collection (legacy)
-  getEmailCodesCollection() {
-    return this.getDb().collection('email_verification_codes');
-  }
 }
 
-// Create singleton instance
 const dbConnection = new DatabaseConnection();
 
 module.exports = dbConnection;

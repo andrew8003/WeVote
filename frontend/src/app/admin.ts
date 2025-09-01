@@ -20,7 +20,6 @@ export class AdminComponent implements OnInit, AfterViewInit {
   constructor(private titleService: Title) {}
 
   private getBaseURL(): string {
-    // In production, API calls will be relative (same origin)
     // In development, use localhost
     if (window.location.hostname === 'localhost') {
       return 'http://localhost:3000/admin';
@@ -142,7 +141,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   }
 
   private sortTable(tableName: string, column: string) {
-    // Determine sort direction
+    // sort direction
     let direction = 'asc';
     if (this.currentSort.table === tableName && this.currentSort.column === column) {
       direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
@@ -154,7 +153,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
     // Update header styling
     this.updateSortHeaders(tableName, column, direction);
 
-    // Sort and re-render the appropriate table
+    // Sort the appropriate table
     if (tableName === 'constituency') {
       this.sortAndRenderConstituencyTable(column, direction);
     } else if (tableName === 'candidates') {
@@ -525,7 +524,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
       percentage: party.percentage
     }));
 
-    // Initial sort by total votes (descending)
+    // Initial sort by total votes descending
     this.sortAndRenderMpPartyTable('totalVotes', 'desc');
   }
 
@@ -553,7 +552,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
       percentage: party.percentage
     }));
 
-    // Initial sort by total votes (descending)
+    // Initial sort by total votes descending
     this.sortAndRenderCouncilPartyTable('totalVotes', 'desc');
   }
 

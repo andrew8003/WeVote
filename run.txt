@@ -1,3 +1,9 @@
+**inital setup**
+npm install
+
+
+
+
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 cd backend
@@ -10,7 +16,7 @@ npm start
 ➜  Local:   http://localhost:4200/
 
 
-run in separate command prompt windows 
+run in separate COMMAND PROMPT windows 
 
 localhost:4200
 localhost:4200/vote-login

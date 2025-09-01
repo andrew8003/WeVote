@@ -21,7 +21,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   showVerification = false;
   verificationSuccess = false;
   
-  // Email verification properties
+  // Email verification 
   showEmailSetup = true;
   userEmail = '';
   emailSent = false;
@@ -221,7 +221,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     // Generate a random secret key for the user
     this.secretKey = this.generateSecretKey();
     
-    // Create the authenticator code (6-digit)
+    // Create the authenticator code 6-digit
     this.authCode = this.generateAuthCode();
     
     // Store secret key in backend
@@ -229,7 +229,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     
     // Create the QR code data in the format expected by authenticator apps
     const issuer = 'WeVote';
-    const accountName = 'voter@wevote.com'; // This could be user's email
+    const accountName = 'voter@wevote.com'; 
     const otpAuthURL = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${this.secretKey}&issuer=${encodeURIComponent(issuer)}`;
     
     // Generate QR code
@@ -330,7 +330,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       
       console.log('Completing registration and saving to database...');
       
-      // Complete registration in backend (save to MongoDB)
+      // Complete registration in backend and save to MongoDB
       const result = await this.userService.completeRegistration();
       
       console.log('Registration completed successfully:', result);

@@ -632,7 +632,7 @@ table.data-table th * {
     text-align: center !important;
 }
 
-/* Override any inherited text alignment */
+/* Override any  text alignment */
 #constituencyTable td,
 #constituencyTable th,
 #mpPartyTable td,

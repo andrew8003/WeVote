@@ -2,7 +2,7 @@ const express = require('express');
 const dbConnection = require('../utils/database');
 const router = express.Router();
 
-// Database-based admin authentication middleware
+// Database-based admin authentication 
 const adminAuth = async (req, res, next) => {
   try {
     const { username, password } = req.body;
@@ -56,7 +56,7 @@ router.post('/login', adminAuth, (req, res) => {
   });
 });
 
-// Setup admin user endpoint (for initial setup only)
+// Setup admin user endpoint for initial setup ( unfinished )
 router.post('/setup', async (req, res) => {
   try {
     console.log('Admin setup endpoint called');
@@ -97,7 +97,7 @@ router.post('/setup', async (req, res) => {
   }
 });
 
-// Get comprehensive voting statistics
+// Get voting statistics
 router.post('/stats', adminAuth, async (req, res) => {
   try {
     const db = await dbConnection.connect();
@@ -110,7 +110,7 @@ router.post('/stats', adminAuth, async (req, res) => {
     const candidateMap = {};
     allCandidates.forEach(candidate => {
       candidateMap[candidate.candidateId] = {
-        name: candidate.name, // Use 'name' field from your data structure
+        name: candidate.name, 
         party: candidate.party
       };
     });
@@ -121,7 +121,7 @@ router.post('/stats', adminAuth, async (req, res) => {
     const allVoters = await votersCollection.find({}).toArray();
     const totalRegistered = allVoters.length;
     
-    // Get voters who have actually cast votes (using voteCast field)
+    // Get voters who have actually cast votes using voteCast field
     const votersWhoVoted = await votersCollection.find({ voteCast: true }).toArray();
     const totalVotersTurnout = votersWhoVoted.length;
 
@@ -129,7 +129,7 @@ router.post('/stats', adminAuth, async (req, res) => {
     const allCastVotes = await castVotesCollection.find({}).toArray();
     const totalVotesCast = allCastVotes.length;
 
-    // Group votes by constituency (area) and by party
+    // Group votes by constituency and by party
     const votesByConstituency = {};
     const candidateVotes = {};
     const mpVotesByParty = {};
@@ -148,20 +148,20 @@ router.post('/stats', adminAuth, async (req, res) => {
           constituency = voter.postcode.substring(0, 3);
         }
       }
-      
-      // Default to 'Unknown' if we can't determine constituency
+
+      // error handling if constituency isnt available
       if (!constituency) {
         constituency = 'Unknown';
       }
 
       const candidateId = vote.candidateId;
-      const voteType = vote.voteType || vote.race; // Handle different field names
+      const voteType = vote.voteType || vote.race; // different field names
       const candidateInfo = candidateMap[candidateId];
       const party = candidateInfo ? candidateInfo.party : 'Unknown Party';
 
       console.log(`Processing vote: constituency=${constituency}, candidateId=${candidateId}, voteType=${voteType}, race=${vote.race}, party=${party}`);
 
-      // Initialize constituency if not exists
+      // Initialize constituency if not already existing
       if (!votesByConstituency[constituency]) {
         votesByConstituency[constituency] = {
           constituency: constituency
@@ -221,17 +221,17 @@ router.post('/stats', adminAuth, async (req, res) => {
     })).sort((a, b) => b.totalVotes - a.totalVotes);
 
     // Debug output
-    console.log('MP votes by party:', mpVotesByParty);
-    console.log('Council votes by party:', councilVotesByParty);
-    console.log('Total MP votes:', totalMpVotes);
-    console.log('Total Council votes:', totalCouncilVotes);
+    // console.log('MP votes by party:', mpVotesByParty);
+    // console.log('Council votes by party:', councilVotesByParty);
+    // console.log('Total MP votes:', totalMpVotes);
+    // console.log('Total Council votes:', totalCouncilVotes);
 
     // Get voter registration by constituency using voteCast field
     const votersByConstituency = {};
     
     // Count registered voters and voters who voted by constituency
     allVoters.forEach(voter => {
-      // Extract constituency from postcode (first 3 digits)
+      // Extract constituency from postcode first 3 digits
       const postcode = voter.postcode || '';
       const constituency = postcode.length >= 3 ? postcode.substring(0, 3) : 'Unknown';
       
@@ -286,7 +286,7 @@ router.post('/stats', adminAuth, async (req, res) => {
   }
 });
 
-// Get detailed voter list (for admin purposes)
+// Get detailed voter list
 router.post('/voters', adminAuth, async (req, res) => {
   try {
     const db = await dbConnection.connect();
@@ -301,7 +301,6 @@ router.post('/voters', adminAuth, async (req, res) => {
         voteCast: 1,
         registrationDate: 1,
         voteTimestamp: 1,
-        // Don't include encrypted National Insurance for security
         nationalInsuranceEncrypted: 0,
         nationalInsuranceIV: 0
       }

@@ -8,7 +8,7 @@ const securityUtils = require('../utils/security');
 
 const router = express.Router();
 
-// In-memory storage for user sessions (temporary storage before full registration)
+// In-memory temporary storage for user sessions
 const userSessions = new Map();
 
 // Azure Communication Services Email client
@@ -48,7 +48,7 @@ const sendVotingNotificationEmail = async (email) => {
           accessCodeEncrypted: encryptedAccessCode.encrypted,
           accessCodeIV: encryptedAccessCode.iv,
           accessCodeCreated: new Date(),
-          accessCodeExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+          accessCodeExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hour clock
         }
       }
     );
@@ -62,6 +62,8 @@ const sendVotingNotificationEmail = async (email) => {
   
   const emailClient = createEmailClient();
   
+// email for vote login code
+
   const emailMessage = {
     senderAddress: process.env.EMAIL_FROM || "DoNotReply@wevote.digital",
     content: {
@@ -138,8 +140,8 @@ const sendVotingNotificationEmail = async (email) => {
       ]
     }
   };
-  
-  console.log('Sending voting notification email with Azure Communication Services...');
+
+  // console.log('Sending voting notification email');
   const poller = await emailClient.beginSend(emailMessage);
   const result = await poller.pollUntilDone();
   
@@ -162,6 +164,8 @@ const sendVoteReceiptEmail = async (email, voteData) => {
 
   const emailClient = createEmailClient();
   
+//vote reciept email 
+
   const emailMessage = {
     senderAddress: process.env.EMAIL_FROM || "DoNotReply@wevote.digital",
     content: {
@@ -206,7 +210,7 @@ const sendVoteReceiptEmail = async (email, voteData) => {
             </div>
             
             <div style="background: #e8f5e8; border-radius: 10px; padding: 20px; margin: 25px 0;">
-              <h4 style="color: #2d3748; margin: 0 0 15px 0;">🔒 Security & Privacy</h4>
+              <h4 style="color: #2d3748; margin: 0 0 15px 0;"> Security & Privacy</h4>
               <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Your vote has been encrypted and anonymized</li>
                 <li>This receipt confirms your participation but cannot be used to verify your specific choices to others</li>
@@ -216,7 +220,7 @@ const sendVoteReceiptEmail = async (email, voteData) => {
             </div>
             
             <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 10px; padding: 20px; margin: 25px 0;">
-              <h4 style="color: #856404; margin: 0 0 15px 0;">⚠️ Important Reminders</h4>
+              <h4 style="color: #856404; margin: 0 0 15px 0;"> Important Reminders</h4>
               <ul style="color: #856404; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li><strong>One Vote Only:</strong> You cannot vote again in this election</li>
                 <li><strong>Vote is Final:</strong> Your vote cannot be changed after submission</li>
@@ -264,7 +268,7 @@ router.post('/users', async (req, res) => {
     
     const { firstName, lastName, postcode, nationalInsurance } = req.body;
 
-    // Validate required fields
+    // Validate fields
     if (!firstName || !lastName || !postcode || !nationalInsurance) {
       console.log('Missing required fields');
       return res.status(400).json({ 
@@ -272,13 +276,13 @@ router.post('/users', async (req, res) => {
       });
     }
 
-    // Normalize personal data for consistent storage
+    // Normalize personal data for consistencey 
     const normalizedData = securityUtils.normalizePersonalData(firstName, lastName, postcode, nationalInsurance);
 
     // Generate a temporary session ID
     const sessionId = crypto.randomUUID();
     
-    // Store personal details in memory (temporary)
+    // Store personal details in memory 
     const userData = {
       sessionId,
       firstName: normalizedData.firstName,
@@ -369,14 +373,17 @@ router.post('/users/:sessionId/send-email-verification', async (req, res) => {
     // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store in session with expiration (5 minutes)
+    // Store in session with 5 min expiration 
     userData.emailVerificationCode = verificationCode;
     userData.emailCodeExpires = new Date(Date.now() + 5 * 60 * 1000);
     userSessions.set(sessionId, userData);
 
-    // Send email using Azure Communication Services
+    // Send email 
     const emailClient = createEmailClient();
     
+
+//authentication setup email 
+
     const emailMessage = {
       senderAddress: process.env.EMAIL_FROM || "DoNotReply@wevote.digital",
       content: {
@@ -507,7 +514,7 @@ router.post('/users/:sessionId/verify-email', async (req, res) => {
   }
 });
 
-// Setup TOTP (store secret in session)
+// Setup TOTP and store secret in session
 router.post('/users/:sessionId/setup-totp', async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -544,7 +551,7 @@ router.post('/users/:sessionId/setup-totp', async (req, res) => {
   }
 });
 
-// Verify TOTP code (works with session storage)
+// Verify TOTP code, works with session storage
 router.post('/users/:sessionId/verify-totp', async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -575,7 +582,7 @@ router.post('/users/:sessionId/verify-totp', async (req, res) => {
       secret: userData.totpSecret,
       encoding: 'base32',
       token: code,
-      window: 1 // Allow 1 step tolerance (30 seconds before/after)
+      window: 1 
     });
 
     if (!verified) {
@@ -665,7 +672,7 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
     // Encrypt email for receipt functionality
     const encryptedEmail = securityUtils.encryptEmail(userData.email);
 
-    // Check if user already exists (by hashed email to avoid duplicates)
+    // Check if user already exists by hashed email to avoid duplicates
     const existingAuth = await voterAuthCollection.findOne({ 
       emailHash: hashedEmail 
     });
@@ -677,7 +684,7 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
     }
 
     try {
-      // Create voter record (personal information)
+      // Create voter record with personal information
       const voterRecord = {
         voterId: voterId,
         firstName: userData.firstName,
@@ -685,12 +692,12 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
         postcode: userData.postcode,
         nationalInsuranceEncrypted: encryptedNI.encrypted,
         nationalInsuranceIV: encryptedNI.iv,
-        voteCast: false, // Default: no vote cast yet
+        voteCast: false, // Default, no vote cast yet
         registrationDate: new Date(),
         updatedAt: new Date()
       };
 
-      // Create authentication record (auth information)
+      // Create authentication record with auth information
       const encryptedTotpSecret = securityUtils.encryptTotpSecret(userData.totpSecret);
       const authRecord = {
         voterId: voterId, // Foreign key to voter
@@ -726,7 +733,7 @@ router.post('/users/:sessionId/complete-registration', async (req, res) => {
         // The voter can still vote, they just won't get the immediate notification
       }
 
-      // Clean up session data
+      // clear up session data
       userSessions.delete(sessionId);
 
       res.json({ 
@@ -780,7 +787,7 @@ router.post('/verify-voter', async (req, res) => {
     const votersCollection = dbConnection.getVotersCollection();
     const voterAuthCollection = dbConnection.getVoterAuthCollection();
 
-    // First, find all voters who haven't cast their vote yet
+    // find all voters who haven't cast their vote yet
     const eligibleVoters = await votersCollection.find({ voteCast: false }).toArray();
     
     if (eligibleVoters.length === 0) {
@@ -866,7 +873,7 @@ router.post('/verify-voter', async (req, res) => {
               secret: decryptedTotpSecret,
               encoding: 'base32', // Original secret encoding
               token: totpCode,
-              window: 2 // Allow some tolerance for time drift
+              window: 2 
             });
 
             if (verified) {
@@ -896,14 +903,13 @@ router.post('/verify-voter', async (req, res) => {
     // Generate a secure ballot token for this voting session
     const ballotToken = crypto.randomBytes(32).toString('hex');
     
-    // Store the ballot token temporarily (in production, use Redis or similar)
-    // For now, we'll add it to the auth record with an expiration
+    // Store the ballot token temporarily
     await voterAuthCollection.updateOne(
       { _id: matchedAuth._id },
       { 
         $set: {
           ballotToken: ballotToken,
-          ballotTokenExpires: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
+          ballotTokenExpires: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes expiration
           lastLoginAttempt: new Date()
         }
       }
@@ -981,7 +987,7 @@ router.post('/submit-vote', async (req, res) => {
       });
     }
 
-    // Extract constituency from voter's postcode (first 3 characters)
+    // Extract constituency from voter's postcode with first 3 characters
     const voterConstituency = voter.postcode.substring(0, 3).toUpperCase();
     console.log('Voter constituency:', voterConstituency, 'from postcode:', voter.postcode);
 
@@ -1029,7 +1035,7 @@ router.post('/submit-vote', async (req, res) => {
         ballotId: ballotId,
         race: 'memberOfParliament',
         candidateId: memberOfParliament,
-        constituency: voterConstituency, // Use extracted 3-digit constituency
+        constituency: voterConstituency, // Use 3-digit constituency
         timestamp: voteTimestamp,
         voteHash: crypto.createHash('sha256').update(mpVoteId + memberOfParliament + voteTimestamp.toISOString()).digest('hex')
       },
@@ -1038,7 +1044,7 @@ router.post('/submit-vote', async (req, res) => {
         ballotId: ballotId,
         race: 'localCouncil',
         candidateId: localCouncil,
-        constituency: voterConstituency, // Use extracted 3-digit constituency
+        constituency: voterConstituency, // Use 3-digit constituency
         timestamp: voteTimestamp,
         voteHash: crypto.createHash('sha256').update(councilVoteId + localCouncil + voteTimestamp.toISOString()).digest('hex')
       }
@@ -1048,7 +1054,7 @@ router.post('/submit-vote', async (req, res) => {
     await castVotesCollection.insertMany(voteRecords);
     console.log('Anonymous vote records created:', { mpVoteId, councilVoteId, ballotId });
 
-    // Mark vote as cast in voter record (but don't store vote choices here)
+    // Mark vote as cast in voter record but don't store vote choices
     await votersCollection.updateOne(
       { _id: voter._id },
       { 
@@ -1143,7 +1149,7 @@ router.post('/submit-vote', async (req, res) => {
         }
       },
       constituency: voterConstituency,
-      emailReceiptSent: true // In demo mode, always true
+      emailReceiptSent: true
     });
 
   } catch (error) {
@@ -1173,7 +1179,7 @@ router.get('/candidates/:constituency', async (req, res) => {
       });
     }
 
-    // Group candidates by race (memberOfParliament vs localCouncil)
+    // Group candidates by race, memberOfParliament vs localCouncil
     const candidatesByRace = {
       memberOfParliament: candidates.filter(c => c.race === 'memberOfParliament'),
       localCouncil: candidates.filter(c => c.race === 'localCouncil')
@@ -1196,7 +1202,7 @@ router.get('/candidates/:constituency', async (req, res) => {
   }
 });
 
-// Test endpoint to resend voting notification (for testing purposes)
+// Test endpoint to resend voting notification, not functional atm
 router.post('/resend-voting-notification', async (req, res) => {
   try {
     const { email } = req.body;
@@ -1224,7 +1230,7 @@ router.post('/resend-voting-notification', async (req, res) => {
   }
 });
 
-// Send vote receipt email (for when actual email addresses are available)
+// Send vote receipt email 
 router.post('/send-vote-receipt', async (req, res) => {
   try {
     const {

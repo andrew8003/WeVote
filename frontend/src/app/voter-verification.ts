@@ -43,7 +43,7 @@ export class VoterVerificationComponent implements OnInit {
     
     // Various UK NI number formats
     const patterns = [
-      /^[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\d{6}[A-D]$/,  // Standard format
+      /^[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\d{6}[A-D]$/,  // without spaces
       /^[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]$/  // With spaces
     ];
     

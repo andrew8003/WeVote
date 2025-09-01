@@ -31,7 +31,6 @@ export class UserService {
   private baseUrl = this.getBaseUrl();
   
   private getBaseUrl(): string {
-    // In production, API calls will be relative (same origin)
     // In development, use localhost
     if (window.location.hostname === 'localhost') {
       return 'http://localhost:3000/api';
@@ -172,13 +171,12 @@ export class UserService {
     return await response.json();
   }
 
-  // Get user profile (for session-based flow, this may not be needed)
+  // Get user profile 
   async getUserProfile(): Promise<User | null> {
     if (!this.currentSessionId) {
       return null;
     }
 
-    // Note: This endpoint may not exist for sessions, keeping for compatibility
     const response = await fetch(`${this.baseUrl}/users/${this.currentSessionId}`);
 
     if (!response.ok) {
@@ -193,7 +191,7 @@ export class UserService {
     return this.currentSessionId;
   }
 
-  // Check if we have a current session ID
+  // Check if there is  a current session ID
   hasCurrentSession(): boolean {
     return this.currentSessionId !== null;
   }
@@ -294,7 +292,7 @@ export class UserService {
     return await response.json();
   }
 
-  // Send vote receipt email (for when actual email is available)
+  // Send vote receipt email
   async sendVoteReceipt(receiptData: any): Promise<any> {
     const response = await fetch(`${this.baseUrl}/send-vote-receipt`, {
       method: 'POST',

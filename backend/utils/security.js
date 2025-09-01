@@ -40,7 +40,7 @@ class SecurityUtils {
     return 'VTR-' + crypto.randomBytes(8).toString('hex').toUpperCase();
   }
 
-  // Encrypt TOTP secret for storage (instead of hashing)
+  // Encrypt TOTP secret for storage 
   encryptTotpSecret(secret) {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(this.encryptionKey), iv);
@@ -61,7 +61,7 @@ class SecurityUtils {
     return decrypted;
   }
 
-  // Hash TOTP secret for storage (legacy - keeping for compatibility)
+  // Hash TOTP secret for storage 
   hashTotpSecret(secret) {
     return crypto.createHash('sha256').update(secret).digest('hex');
   }

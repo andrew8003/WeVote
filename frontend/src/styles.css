@@ -29,17 +29,17 @@ button:focus {
   outline-offset: 2px;
 }
 
-/* Remove focus outline for mouse users, keep for keyboard users */
+/* Remove focus outline for mouse */
 .mouse-user *:focus {
   outline: none;
 }
 
-/* Smooth transitions for better UX */
+/* Smooth transitions  */
 * {
   transition: all 0.3s ease;
 }
 
-/* Scrollbar styling for webkit browsers */
+/* Scrollbar styling for webkit */
 ::-webkit-scrollbar {
   width: 8px;
 }

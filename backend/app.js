@@ -10,15 +10,13 @@ var adminRouter = require('./routes/admin');
 
 var app = express();
 
-// Enable CORS - in production, this will be same origin
 const allowedOrigins = [
   'http://localhost:4200', // Angular dev server
-  process.env.WEBSITE_URL || 'https://your-app.evennode.com' // Production URL
+  process.env.WEBSITE_URL || 'https://wevote.evennode.com' // Production URL, not setup
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -42,7 +40,7 @@ app.use('/admin', adminRouter);
 // Serve static files from Angular build
 app.use(express.static(path.join(__dirname, '../frontend/dist/frontend')));
 
-// Catch all handler: send back Angular's index.html file for any non-API routes
+// Catch all handler, sends back Angular's index.html file for any non-API routes
 app.get('*', (req, res) => {
   // Don't serve index.html for API routes
   if (req.url.startsWith('/api') || req.url.startsWith('/admin')) {
@@ -52,7 +50,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/frontend/index.html'));
 });
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
